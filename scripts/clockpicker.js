@@ -1,11 +1,23 @@
-let canvasClockpicker = document.getElementById("canvasClockpicker");
-var ctx=canvasClockpicker.getContext("2d");
 
-// Create gradient
-var grd=ctx.createLinearGradient(0,0,200,0);
-grd.addColorStop(0,"red");
-grd.addColorStop(1,"white");
+(function () {
+    const CANVAS_WIDTH = 200;
+    const CANVAS_HEIGHT = 200;
+    
+    var allCanvas = document.querySelectorAll("#container canvas");
+    var allContext = function ( ) {
+        
+    }
+    var setCanvasSizes = function() {
+        var allCanvas = document.querySelectorAll("#container canvas");
+        for( var i = 0; i < allCanvas.length; i++){
+            allCanvas[i].width = CANVAS_WIDTH;
+            allCanvas[i].height = CANVAS_HEIGHT;
+        }
+    }
 
-// Fill with gradient
-ctx.fillStyle=grd;
-ctx.fillRect(10,10,150,80);
+    var start = function ( ){
+        setCanvasSizes();
+    }
+
+    start();
+})();

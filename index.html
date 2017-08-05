@@ -1,11 +1,18 @@
 <!DOCTYPE html>
 <html>
     <head>
-    <title>Clockpicker</title>
+        <title>Clockpicker</title>
+        <link rel="stylesheet" type="text/css" href="./css/clockpicker.css">
     </head>
     <body>
 
-        <canvas id="canvasClockpicker" width="200" height="200" style="border:1px solid #d3d3d3;">
+        <div id="container">
+            <canvas id="canvBackground"></canvas>
+            <canvas id="canvDigit"></canvas>
+            <canvas id="canvPointer"></canvas>
+        </div>
+
         <script src="./scripts/clockpicker.js"></script>
+        
     </body>
 </html>
