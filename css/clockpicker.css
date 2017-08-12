@@ -1,3 +1,7 @@
+
+body {
+}
+
 #container {
   position: relative;
 }
@@ -6,5 +10,4 @@
   position: absolute;
   top: 0;
   left: 0;
-  background-color:#333
 }
