@@ -10,6 +10,7 @@ class Hand {
             this._maxNum = maxNum;
             this._totNum = (maxNum - minNum) + 1;
             this._angleBetweenNumbers =  2 * Math.PI / this._totNum;
+            this._angleAnimation = 2 * Math.PI / 360;
         }
         
         draw (angle) {
@@ -27,22 +28,90 @@ class Hand {
             this._ctx.stroke();
         }
         
-        animate(startNumber, endNumber) {
+        animate(startAngle, endAngle) {
+            
+            var self = this;
+            let animate_inner;
+            let  curAngle = startAngle;
 
-            var startAngle = this._angleBetweenNumbers*startNumber - Math.PI/2;        
-            var curAngle = startAngle;
-            var endAngle = this._angleBetweenNumbers*endNumber - Math.PI/2;
-            var that = this;
+            let nextAngleCounterClockWise = function (curAngle, endAngle) {  
+                if ( curAngle > 0 ) {                    
+                    if (curAngle < endAngle) {                            
+                        curAngle -= self._angleAnimation;
+                    } else { 
+                        return;
+                    }
+                } else {
+                    curAngle += 2 * Math.PI;
+                }
+                return curAngle;
+            }
+ 
+            let nextAngleClockWise = function (curAngle, endAngle) {
+                if ( curAngle < 2 * Math.PI ) {
+                    if (curAngle < endAngle) {           
+                        curAngle += self._angleAnimation;
+                    } else { 
+                        return;
+                    }
+                } else {
+                    curAngle -= 2 * Math.PI;
+                }
+                return curAngle;
+            }
 
-            var animate_inner = function () {
-                if( curAngle < endAngle ){
-                    this.draw(curAngle);
-                    curAngle += .01;
-                    
-                    requestAnimationFrame(animate_inner.bind(this));
+            if (endAngle > startAngle){
+                if ((endAngle - startAngle) > Math.PI) {
+                    //counter clockwise
+                    animate_inner = function () {
+                        self.draw(curAngle);
+                        curAngle = nextAngleCounterClockWise(curAngle, endAngle);
+                        if (!isNaN(curAngle)) {
+                            requestAnimationFrame(function () {
+                                animate_inner();
+                            });
+                        }
+                    }
+                } else {
+                    //clockwise
+                    animate_inner = function () {
+                        self.draw(curAngle);
+                        curAngle = nextAngleClockWise(curAngle, endAngle);
+                        if (!isNaN(curAngle)) {
+                            requestAnimationFrame(function () {
+                                animate_inner();
+                            });
+                        }
+                    }
+                }
+
+            } else if (endAngle <= startAngle){
+                if ((startAngle - endAngle) > Math.PI) {
+                    //clockwise
+                    animate_inner = function () {
+                        self.draw(curAngle);
+                        curAngle = nextAngleClockWise(curAngle, endAngle);
+                        if (!isNaN(curAngle)) {
+                            requestAnimationFrame(function () {
+                                animate_inner();
+                            });
+                        }
+                    }                    
+                } else {
+                    //counter clockwise
+                    animate_inner = function () {
+                        self.draw(curAngle);
+                        curAngle = nextAngleCounterClockWise(curAngle, endAngle);
+                        if (!isNaN(curAngle)) {
+                            requestAnimationFrame(function () {
+                                animate_inner();
+                            });
+                        }
+                    }
                 }
             }
-            var requestID = requestAnimationFrame(animate_inner.bind(this));
+            var requestID = requestAnimationFrame(animate_inner);
         }
 
+ 
     }

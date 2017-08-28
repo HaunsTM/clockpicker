@@ -4,10 +4,7 @@
     
 
 
-    var requestAnimationFrame = window.requestAnimationFrame || 
-                                window.mozRequestAnimationFrame || 
-                                window.webkitRequestAnimationFrame || 
-                                window.msRequestAnimationFrame;
+
     
     
 
@@ -16,10 +13,10 @@
     
     var start = function ( ){
 
-        const CANVAS_WIDTH = 200;
-        const CANVAS_HEIGHT = 200;
+        const CANVAS_WIDTH = 500;
+        const CANVAS_HEIGHT = 500;
 
-        var radius = CANVAS_HEIGHT/3;
+        var radius = CANVAS_HEIGHT/2;
         var startNumber = 1;
         var endNumber = 12;
         var handLength = radius*0.70;
