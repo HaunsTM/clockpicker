@@ -10,7 +10,7 @@ class Hand {
             this._maxNum = maxNum;
             this._totNum = (maxNum - minNum) + 1;
             this._angleBetweenNumbers =  2 * Math.PI / this._totNum;
-            this._angleAnimation = 2 * Math.PI / 360;
+            this._angleAnimation = 2 * Math.PI / 72;
         }
         
         draw (angle) {
@@ -20,7 +20,7 @@ class Hand {
             //clear the entire area
             this._ctx.clearRect(0-width/2, 0-height/2, width, height);
             this._ctx.beginPath();
-            this._ctx.lineWidth = this._lineWidth;
+            this._ctx.lineWidth = this._lineWidth+10;
             this._ctx.lineCap = "round";
 
             this._ctx.moveTo(0,0);
@@ -32,84 +32,46 @@ class Hand {
             
             var self = this;
             let animate_inner;
+
+            let smallestDiffBetweenAngles = Math.atan2(Math.sin(endAngle-startAngle), Math.cos(endAngle-startAngle));
+            let rotateClockwise = smallestDiffBetweenAngles > 0;
+            let willPassZeroAngle = ( rotateClockwise && ( startAngle > endAngle )) || ( !rotateClockwise && ( startAngle < endAngle ));
+
+            startAngle = ( !rotateClockwise && willPassZeroAngle ) ? startAngle + 2 * Math.PI : startAngle;
+            endAngle = ( rotateClockwise && willPassZeroAngle ) ? endAngle + 2 * Math.PI : endAngle;
+
             let  curAngle = startAngle;
 
-            let nextAngleCounterClockWise = function (curAngle, endAngle) {  
-                if ( curAngle > 0 ) {                    
-                    if (curAngle < endAngle) {                            
-                        curAngle -= self._angleAnimation;
-                    } else { 
-                        return;
-                    }
+            let nextAngle = function (curAngle, endAngle) {
+                let nextAngleCandidate;
+
+                if( rotateClockwise ) {
+                    //clockwise
+                    nextAngleCandidate = curAngle + self._angleAnimation;
+
+                    //should we stop?
+                    nextAngleCandidate = nextAngleCandidate <= endAngle ? nextAngleCandidate : null;
                 } else {
-                    curAngle += 2 * Math.PI;
+                    //counterclockwise
+                    nextAngleCandidate = curAngle - self._angleAnimation;
+
+                    //should we stop?
+                    nextAngleCandidate = nextAngleCandidate >= endAngle ? nextAngleCandidate : null;
                 }
-                return curAngle;
-            }
- 
-            let nextAngleClockWise = function (curAngle, endAngle) {
-                if ( curAngle < 2 * Math.PI ) {
-                    if (curAngle < endAngle) {           
-                        curAngle += self._angleAnimation;
-                    } else { 
-                        return;
-                    }
-                } else {
-                    curAngle -= 2 * Math.PI;
-                }
-                return curAngle;
+                return nextAngleCandidate;
             }
 
-            if (endAngle > startAngle){
-                if ((endAngle - startAngle) > Math.PI) {
-                    //counter clockwise
-                    animate_inner = function () {
-                        self.draw(curAngle);
-                        curAngle = nextAngleCounterClockWise(curAngle, endAngle);
-                        if (!isNaN(curAngle)) {
-                            requestAnimationFrame(function () {
-                                animate_inner();
-                            });
-                        }
-                    }
-                } else {
-                    //clockwise
-                    animate_inner = function () {
-                        self.draw(curAngle);
-                        curAngle = nextAngleClockWise(curAngle, endAngle);
-                        if (!isNaN(curAngle)) {
-                            requestAnimationFrame(function () {
-                                animate_inner();
-                            });
-                        }
-                    }
+            animate_inner = function () {
+                self.draw(curAngle);
+                let angleToDraw = nextAngle(curAngle, endAngle);
+                curAngle = angleToDraw;
+                if (angleToDraw && !isNaN(angleToDraw)) {
+                    requestAnimationFrame(function () {
+                        animate_inner();
+                    });
                 }
+            }  
 
-            } else if (endAngle <= startAngle){
-                if ((startAngle - endAngle) > Math.PI) {
-                    //clockwise
-                    animate_inner = function () {
-                        self.draw(curAngle);
-                        curAngle = nextAngleClockWise(curAngle, endAngle);
-                        if (!isNaN(curAngle)) {
-                            requestAnimationFrame(function () {
-                                animate_inner();
-                            });
-                        }
-                    }                    
-                } else {
-                    //counter clockwise
-                    animate_inner = function () {
-                        self.draw(curAngle);
-                        curAngle = nextAngleCounterClockWise(curAngle, endAngle);
-                        if (!isNaN(curAngle)) {
-                            requestAnimationFrame(function () {
-                                animate_inner();
-                            });
-                        }
-                    }
-                }
-            }
             var requestID = requestAnimationFrame(animate_inner);
         }
 
