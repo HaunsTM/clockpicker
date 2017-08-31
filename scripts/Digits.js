@@ -2,7 +2,9 @@
 class Digits extends ContextSuper {
     // Constructor
     constructor (ctx, radius, minNum, maxNum) {
-        super(ctx, radius, minNum, maxNum);
+        super(ctx, radius);
+        this._minNum = minNum;
+        this._maxNum = maxNum;
     }
     
     Draw() {

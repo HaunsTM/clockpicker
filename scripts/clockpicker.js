@@ -17,17 +17,45 @@
         const CANVAS_HEIGHT = 500;
 
         var radius = CANVAS_HEIGHT/2;
-        var startNumber = 1;
-        var endNumber = 12;
-        var handLength = radius*0.70;
-        var handLineWidth = 6;
+
+        var time = {
+            "hour" : {
+                "hand" : {
+                    "length" : radius*0.70,
+                    "width" : 4,
+                    "color" :  "blue"
+                },
+                "start" : 1,
+                "end" : 12
+            },
+            "minute" : {
+                "hand" : {
+                    "length" : radius*0.70,
+                    "width" : 4,
+                    "color" :  "blue"
+                },
+                "start" : 1,
+                "end" : 60
+            },
+            "second" : {
+                "hand" : {
+                    "length" : radius*0.70,
+                    "width" : 1,
+                    "color" :  "blue"
+                },
+                "start" : 1,
+                "end" : 60
+            },
+
+
+        }
 
         var domSelBackground = '#canvBackground';
         var domSelDigits = '#canvDigits';
         var domSelHands = '#canvHands';
        
 
-        var controller = new Controller(domSelBackground, domSelDigits, domSelHands, CANVAS_WIDTH, CANVAS_HEIGHT, radius, handLength, handLineWidth, startNumber, endNumber);
+        var controller = new Controller(domSelBackground, domSelDigits, domSelHands, CANVAS_WIDTH, CANVAS_HEIGHT, radius, time);
     }
 
     start();
