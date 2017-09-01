@@ -13,16 +13,21 @@ class Hand {
 
                     let angleBetweenNumbers =  2 * Math.PI / totNum
                     let numbersAndAngles = [];
+
+                    for ( let r = 0; r < 2; r++) {
+                        for ( let i = 0; i < totNum ; i++){
+                            let number = i+1;
     
-                    for ( let i = 0; i < totNum; i++){
-                        let number = i+1;
-
-                        let angle = number < (totNum/4) ? (3/2*Math.PI) + angleBetweenNumbers*(i+1) : angleBetweenNumbers*((i+1)-totNum/4)
-
-                        let correspondingNumberAndAngle = [number, angle];
-
-                        numbersAndAngles.push(correspondingNumberAndAngle);
+                            let angle = number < (totNum/4) ? (3/2*Math.PI) + angleBetweenNumbers*(i+1) : angleBetweenNumbers*((i+1)-totNum/4)
+                            angle += r*2*Math.PI;
+                            
+                            //rad = rad - parseInt( rad / ( 2 * Math.PI ) ) * ( 2 * Math.PI );
+                            let correspondingNumberAndAngle = [number, angle];
+    
+                            numbersAndAngles.push(correspondingNumberAndAngle);
+                        }
                     }
+    
     
                     return numbersAndAngles;    
                 }
@@ -47,36 +52,6 @@ class Hand {
             context.stroke();
         }
 
-        willPassNumber (angleBeforeHandPass, angleAfterHandPass){
-            let length = this._numbersAndAngles.length;
-            for( let i = 0; i < length; i++ ) {
-                let number = this._numbersAndAngles[i][0];
-                let angle = this._numbersAndAngles[i][1];
-                if ( (angleBeforeHandPass < angle && angle < angleAfterHandPass) || (angleBeforeHandPass > angle && angle > angleAfterHandPass )){
-                    //debugger;
-                    //passing number
-                    return number;
-                }
-            }
-            return null;
-        }
-
-        raiseAnimationIsPassingNumber(number){
-            var event = new CustomEvent(
-                "onAnimationIsPassingNumber", 
-                {
-                    "detail": {
-                        "passedNumber": number
-                    },
-                    "bubbles": true,
-                    "cancelable": true
-                }
-            )
-            
-            this._canAndCtx.canvas.dispatchEvent(event);
-        }
-
-
         animate(startAngle, endAngle) {
             
             var self = this;
@@ -89,7 +64,41 @@ class Hand {
             startAngle = ( !rotateClockwise && willPassZeroAngle ) ? startAngle + 2 * Math.PI : startAngle;
             endAngle = ( rotateClockwise && willPassZeroAngle ) ? endAngle + 2 * Math.PI : endAngle;
 
-
+            let willPassNumber = function (angleBeforeHandPass, angleAfterHandPass){
+                let length = self._numbersAndAngles.length;
+                
+               // angleBeforeHandPass = angleBeforeHandPass - parseInt( angleBeforeHandPass / ( 2 * Math.PI ) ) * ( 2 * Math.PI );
+            
+         //   angleAfterHandPass = angleAfterHandPass - parseInt( angleAfterHandPass / ( 2 * Math.PI ) ) * ( 2 * Math.PI );
+                let minAngle = Math.min(angleBeforeHandPass, angleAfterHandPass);
+                let maxAngle = Math.max(angleBeforeHandPass, angleAfterHandPass);
+                for( let i = 0; i < length; i++ ) {
+                    let number = self._numbersAndAngles[i][0];
+                    let angle = self._numbersAndAngles[i][1];
+                    if ( (minAngle < angle && angle < maxAngle) || ( rotateClockwise && ( angleBeforeHandPass > angleAfterHandPass )) || ( !rotateClockwise && ( angleBeforeHandPass < angleAfterHandPass )) ){
+                        //debugger;
+                        //passing number
+                        return number;
+                    }
+                }
+                return null;
+            }
+    
+            let raiseAnimationIsPassingNumber = function (number){
+                var event = new CustomEvent(
+                    "onAnimationIsPassingNumber", 
+                    {
+                        "detail": {
+                            "passedNumber": number
+                        },
+                        "bubbles": true,
+                        "cancelable": true
+                    }
+                )
+                
+                self._canAndCtx.canvas.dispatchEvent(event);
+            }
+    
             let nextAngle = function (curAngle, endAngle) {
                 let nextAngleCandidate;
 
@@ -124,8 +133,8 @@ class Hand {
                 //are we done
                 if (angleToDraw && !isNaN(angleToDraw)) {
                     
-                    let numberPassed = self.willPassNumber(curAngle, angleToDraw);
-                    if ( numberPassed > 0 ) self.raiseAnimationIsPassingNumber( numberPassed );
+                    let numberPassed = willPassNumber(curAngle, angleToDraw);
+                    if ( numberPassed > 0 ) raiseAnimationIsPassingNumber( numberPassed );
                     curAngle = angleToDraw;
                     requestAnimationFrame(function () {
                         animate_inner();

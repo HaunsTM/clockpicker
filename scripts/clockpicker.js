@@ -13,8 +13,8 @@
     
     var start = function ( ){
 
-        const CANVAS_WIDTH = 500;
-        const CANVAS_HEIGHT = 500;
+        const CANVAS_WIDTH = 1000;
+        const CANVAS_HEIGHT = 1000;
 
         var radius = CANVAS_HEIGHT/2;
 
