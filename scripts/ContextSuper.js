@@ -5,4 +5,13 @@ class ContextSuper {
         this._ctx = ctx;
         this._radius = radius;
     }
+
+    
+    RequestAnimationFrame () { 
+        let retVal = window.requestAnimationFrame || 
+                     window.mozRequestAnimationFrame || 
+                     window.webkitRequestAnimationFrame || 
+                     window.msRequestAnimationFrame;         
+        return retVal;
+    }
 }

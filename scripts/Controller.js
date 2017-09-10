@@ -1,7 +1,7 @@
 'use strict';
     class Controller {
         // Constructor
-        constructor (domBackground, domDigits, domHands, canWidth, canHeight, radius, time) {
+        constructor (domSelectors, canWidth, canHeight, radius, time) {
 
             this._radius = radius;
 
@@ -36,28 +36,31 @@
                 "time" : time
             }
 
-            this._canAndCtxBackground = this.SizedAndCenteredOrigoCanvasAndContext(domBackground, this._commonVariables);
-            this._canAndCtxDigits = this.SizedAndCenteredOrigoCanvasAndContext(domDigits, this._commonVariables);
-            this._canAndCtxHands = this.SizedAndCenteredOrigoCanvasAndContext(domHands, this._commonVariables);
+            this._canAndCtxBackground = this.SizedAndCenteredOrigoCanvasAndContext(domSelectors.background, this._commonVariables);
+            this._canAndCtxDigitsHours = this.SizedAndCenteredOrigoCanvasAndContext(domSelectors.digits.hours, this._commonVariables);
+            this._canAndCtxDigitsMinutes = this.SizedAndCenteredOrigoCanvasAndContext(domSelectors.digits.minutes, this._commonVariables);
+            this._canAndCtxHandsHours = this.SizedAndCenteredOrigoCanvasAndContext(domSelectors.hands.hours, this._commonVariables);
+            this._canAndCtxHandsMinutes = this.SizedAndCenteredOrigoCanvasAndContext(domSelectors.hands.minutes, this._commonVariables);
 
-            this._background = new Background(this._canAndCtxBackground.context,this._commonVariables.radius, this._commonVariables.time.hour.start, this._commonVariables.time.hour.end );            
-            this._digits = new Digits(this._canAndCtxDigits.context,this._commonVariables.radius, this._commonVariables.time.hour.start, this._commonVariables.time.hour.end );
-            this._hand = new Hand(this._canAndCtxHands, this._commonVariables.time.hour.hand, this._commonVariables.time.hour.start, this._commonVariables.time.hour.end );
+            this._background = new Background(this._canAndCtxBackground.context,this._commonVariables.radius, this._commonVariables.time.hour.start, this._commonVariables.time.hour.end );
+
+            this._digitsHours = new Digits(this._canAndCtxDigitsHours.context,this._commonVariables.radius, this._commonVariables.time.hour.start, this._commonVariables.time.hour.end );
+            this._digitsMinutes = new Digits(this._canAndCtxDigitsMinutes.context,this._commonVariables.radius, this._commonVariables.time.minute.start, this._commonVariables.time.minute.end );
+
+            this._handsHours = new Hand(this._canAndCtxHandsHours, this._commonVariables.time.hour.hand, this._commonVariables.time.hour.start, this._commonVariables.time.hour.end );
+            this._handsMinutes = new Hand(this._canAndCtxHandsMinutes.context,this._commonVariables.radius, this._commonVariables.time.minute.start, this._commonVariables.time.minute.end );
 
             this._background.Draw();
-            this._digits.Draw();
+            this._digitsHours.Draw();
 
-            this._canAndCtxHands.canvas.addEventListener("mousedown", this.MouseDown.bind(this),  false);
-            this._canAndCtxHands.canvas.addEventListener("mouseup", this.MouseUp.bind(this),  false);
-            this._canAndCtxHands.canvas.addEventListener("onAnimationIsPassingNumber", function (e) {console.log("Passing: " + e.detail.passedNumber)},  false);
+            let utmostCanvas = this._canAndCtxBackground.canvas.parentElement.lastElementChild;
+            utmostCanvas.addEventListener("mousedown", this.MouseDown.bind(this),  false);
+            utmostCanvas.addEventListener("mouseup", this.MouseUp.bind(this),  false);
+            utmostCanvas.addEventListener("onAnimationIsPassingNumber", function (e) {console.log("Passing: " + e.detail.passedNumber)},  false);
         }
 
-        RequestAnimationFrame () { 
-            let retVal = window.requestAnimationFrame || 
-                         window.mozRequestAnimationFrame || 
-                         window.webkitRequestAnimationFrame || 
-                         window.msRequestAnimationFrame;         
-            return retVal;
+        Statemachine ( ) {
+
         }
 
         SizedAndCenteredOrigoCanvasAndContext ( domSelector, commonVariables ) {        

@@ -36,7 +36,7 @@ class Hand {
             this._angleAnimation = 2 * Math.PI / 72;
         }
         
-        draw (angle) {
+        drawAngle (angle) {
             let context = this._canAndCtx.context;
             var width = context.width;
             var height = context.height;
@@ -51,6 +51,7 @@ class Hand {
             context.lineTo(this._hand.length*Math.cos(angle), this._hand.length*Math.sin(angle));
             context.stroke();
         }
+
 
         animate(startAngle, endAngle) {
             
@@ -127,7 +128,7 @@ class Hand {
             let  curAngle = startAngle;
 
             animate_inner = function () {
-                self.draw(curAngle);
+                self.drawAngle(curAngle);
                 let angleToDraw = nextAngle(curAngle, endAngle);
 
                 //are we done
