@@ -48,23 +48,57 @@
             this._digitsMinutes = new Digits(this._canAndCtxDigitsMinutes.context,this._commonVariables.radius, this._commonVariables.time.minute.start, this._commonVariables.time.minute.end );
 
             this._handsHours = new Hand(this._canAndCtxHandsHours, this._commonVariables.time.hour.hand, this._commonVariables.time.hour.start, this._commonVariables.time.hour.end );
-            this._handsMinutes = new Hand(this._canAndCtxHandsMinutes.context,this._commonVariables.radius, this._commonVariables.time.minute.start, this._commonVariables.time.minute.end );
+            this._handsMinutes = new Hand(this._canAndCtxHandsMinutes,this._commonVariables.time.minute.hand, this._commonVariables.time.minute.start, this._commonVariables.time.minute.end);
 
-            this._background.Draw();
-            this._digitsHours.Draw();
-
-            let utmostCanvas = this._canAndCtxBackground.canvas.parentElement.lastElementChild;
-            utmostCanvas.addEventListener("mousedown", this.MouseDown.bind(this),  false);
-            utmostCanvas.addEventListener("mouseup", this.MouseUp.bind(this),  false);
-            utmostCanvas.addEventListener("onAnimationIsPassingNumber", function (e) {console.log("Passing: " + e.detail.passedNumber)},  false);
+            this._state="INITIAL";
+            this.Statemachine ();
         }
 
         Statemachine ( ) {
+            let curState = this._state;
+            let nextState = "";
 
+            switch (this._state) {
+                case "INITIAL":                
+                    this._background.Draw();
+        
+                    this._utmostCanvas = this._canAndCtxBackground.canvas.parentElement.lastElementChild;
+                    this._utmostCanvas.addEventListener("mouseup", this.MouseUp.bind(this),  false);
+                    nextState = "DRAW_INITIAL_TIME";
+
+                    //break;
+                case "DRAW_INITIAL_TIME":
+                    this._digitsHours.clear();
+                    this._digitsMinutes.clear();
+
+                    this._handsHours.clear();
+                    this._handsMinutes.clear();
+
+                    this._digitsHours.Draw();
+                    
+                    this._handsHours.drawAngle(this._commonVariables.time.hour.lastSelectedAngle);
+    
+                    this._handsMinutes.drawAngle(this._commonVariables.time.minute.lastSelectedAngle);
+                    nextState = "SELECT_HOUR";
+                break;
+
+                case "SELECT_HOUR":
+                    nextState = "SELECT_MINUTE";
+                break;
+
+                case "SELECT_MINUTE":
+                    this._digitsHours.clear();
+                    this._digitsMinutes.clear();
+                    this._digitsMinutes.Draw();
+                    nextState = "DRAW_INITIAL_TIME";
+                break;
+
+            }
+            this._state = nextState;
         }
 
-        SizedAndCenteredOrigoCanvasAndContext ( domSelector, commonVariables ) {        
-            let curCanvas = document.querySelector( domSelector );        
+        SizedAndCenteredOrigoCanvasAndContext ( domSelector, commonVariables ) {
+            let curCanvas = document.querySelector( domSelector );
             let curContext = curCanvas.getContext("2d");
 
             curCanvas.width = commonVariables.canvas.width;
@@ -81,9 +115,9 @@
             }
         }
         
-        GetMousePos(e, canAndCtx) {
+        GetMousePos(e) {
 
-            var rect = canAndCtx.canvas.getBoundingClientRect();
+            var rect = this._utmostCanvas.getBoundingClientRect();
 
             return {
                 x: e.clientX - rect.left,
@@ -91,8 +125,8 @@
             };
         }
         
-        GetTranslatedMousePosition(e, canAndCtx, commonVariables) {            
-            var mousePos = this.GetMousePos(e, canAndCtx);
+        GetTranslatedMousePosition(e, commonVariables) {            
+            var mousePos = this.GetMousePos(e, this._utmostCanvas);
             
             return {
                 x: mousePos.x - commonVariables.context.translation.initial.x,
@@ -122,12 +156,13 @@
         }
 
         MouseDown(mouseEvent){
-            var mousePos = this.GetTranslatedMousePosition(mouseEvent, this._canAndCtxHands, this._commonVariables);            
+            var mousePos = this.GetTranslatedMousePosition(mouseEvent, this._commonVariables);            
         }
 
         MouseUp(mouseEvent){
+            
             // http://www.html5canvastutorials.com/advanced/html5-canvas-mouse-coordinates/
-            var mousePos = this.GetTranslatedMousePosition(mouseEvent, this._canAndCtxHands, this._commonVariables);
+            var mousePos = this.GetTranslatedMousePosition(mouseEvent, this._commonVariables);
             
             this._commonVariables.mouse.position.moveEnd.x = mousePos.x;
             this._commonVariables.mouse.position.moveEnd.y = mousePos.y;
@@ -151,10 +186,23 @@
                                 "</table>" +
                                 "<p><b>startAngle: </b>" + Math.round(startAngle.deg) + " &deg; (" + Math.round(startAngle.rad * 100)/100 + " rad" +")</p>"+
                                 "<p><b>endAngle: </b>" + Math.round(endAngle.deg) + " &deg; ("+ Math.round(endAngle.rad * 100)/100 + "  rad" +")</p>";
-            
-            this._hand.animate(startAngle.rad, endAngle.rad);
-            //this._hand.draw(endAngle.rad); 
+
+            switch (this._state) {
+                case "SELECT_HOUR" :
+                    let closestHourAngle = this._handsHours.closestDefinedNumberAndAngle(endAngle.rad).angle;
+                    this._handsHours.animate(this._commonVariables.time.hour.lastSelectedAngle, closestHourAngle);
+                    this._commonVariables.time.hour.lastSelectedAngle = closestHourAngle;
+                    break;
+                case "SELECT_MINUTE" :                    
+                    let closestMinuteAngle = this._handsMinutes.closestDefinedNumberAndAngle(endAngle.rad).angle;
+                    this._handsMinutes.animate(this._commonVariables.time.minute.lastSelectedAngle, closestMinuteAngle);
+                    this._commonVariables.time.minute.lastSelectedAngle = closestMinuteAngle;
+                    break;
+            }
+
             this._commonVariables.mouse.position.moveStart.x = mousePos.x;
-            this._commonVariables.mouse.position.moveStart.y = mousePos.y;   
+            this._commonVariables.mouse.position.moveStart.y = mousePos.y;
+            
+            this.Statemachine();
         }
     }

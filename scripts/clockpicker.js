@@ -13,21 +13,23 @@
         var time = {
             "hour" : {
                 "hand" : {
-                    "length" : radius*0.70,
+                    "length" : radius*0.40,
                     "width" : 4,
-                    "color" :  "blue"
+                    "color" :  "#ff0000"
                 },
                 "start" : 1,
-                "end" : 12
+                "end" : 12,
+                "lastSelectedAngle" : 0                
             },
             "minute" : {
                 "hand" : {
-                    "length" : radius*0.70,
+                    "length" : radius*0.80,
                     "width" : 4,
-                    "color" :  "blue"
+                    "color" :  "black"
                 },
                 "start" : 1,
-                "end" : 60
+                "end" : 12,
+                "lastSelectedAngle" : 0
             },
             "second" : {
                 "hand" : {
@@ -36,10 +38,9 @@
                     "color" :  "blue"
                 },
                 "start" : 1,
-                "end" : 60
-            },
-
-
+                "end" : 60,
+                "lastSelectedAngle" : 0
+            }
         }
 
         let domSelectors = {

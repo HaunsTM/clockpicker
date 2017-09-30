@@ -22,7 +22,7 @@ class Hand {
                             angle += r*2*Math.PI;
                             
                             //rad = rad - parseInt( rad / ( 2 * Math.PI ) ) * ( 2 * Math.PI );
-                            let correspondingNumberAndAngle = [number, angle];
+                            let correspondingNumberAndAngle = {"number": number, "angle": angle};
     
                             numbersAndAngles.push(correspondingNumberAndAngle);
                         }
@@ -36,13 +36,19 @@ class Hand {
             this._angleAnimation = 2 * Math.PI / 72;
         }
         
-        drawAngle (angle) {
+        clear () {            
             let context = this._canAndCtx.context;
             var width = context.width;
             var height = context.height;
 
             //clear the entire area
             context.clearRect(0-width/2, 0-height/2, width, height);
+        }
+
+        drawAngle (angle) {
+            this.clear();
+            let context = this._canAndCtx.context;
+
             context.beginPath();
             context.lineWidth = this._hand.width;
             context.lineCap = "round";
@@ -52,6 +58,29 @@ class Hand {
             context.stroke();
         }
 
+        closestDefinedNumberAndAngle(realAngle) {
+            let i = 0;
+            let iMax = this._numbersAndAngles.length;
+            let isBetween = false;
+
+            while( !isBetween && i < iMax ) {
+                let nA0 = this._numbersAndAngles[i]
+                let nA1 = this._numbersAndAngles[i+1]
+
+                isBetween = nA0.angle <= realAngle && realAngle < nA1.angle;
+
+                if ( isBetween ) {
+                    let nAAverage = ( nA0.angle + nA1.angle) / 2;
+                    if ( realAngle < nAAverage ) {
+                        return nA0;
+                    } else {
+                        return nA1;
+                    }
+                }
+                i++;
+            }
+            return null;
+        }
 
         animate(startAngle, endAngle) {
             
@@ -67,15 +96,13 @@ class Hand {
 
             let willPassNumber = function (angleBeforeHandPass, angleAfterHandPass){
                 let length = self._numbersAndAngles.length;
-                
-               // angleBeforeHandPass = angleBeforeHandPass - parseInt( angleBeforeHandPass / ( 2 * Math.PI ) ) * ( 2 * Math.PI );
             
-         //   angleAfterHandPass = angleAfterHandPass - parseInt( angleAfterHandPass / ( 2 * Math.PI ) ) * ( 2 * Math.PI );
+                //angleAfterHandPass = angleAfterHandPass - parseInt( angleAfterHandPass / ( 2 * Math.PI ) ) * ( 2 * Math.PI );
                 let minAngle = Math.min(angleBeforeHandPass, angleAfterHandPass);
                 let maxAngle = Math.max(angleBeforeHandPass, angleAfterHandPass);
                 for( let i = 0; i < length; i++ ) {
-                    let number = self._numbersAndAngles[i][0];
-                    let angle = self._numbersAndAngles[i][1];
+                    let number = self._numbersAndAngles[i].number;
+                    let angle = self._numbersAndAngles[i].angle;
                     if ( (minAngle < angle && angle < maxAngle) || ( rotateClockwise && ( angleBeforeHandPass > angleAfterHandPass )) || ( !rotateClockwise && ( angleBeforeHandPass < angleAfterHandPass )) ){
                         //debugger;
                         //passing number
