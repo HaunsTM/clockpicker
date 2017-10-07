@@ -1,8 +1,11 @@
 'use strict';
-class Background extends ContextSuper {
+class Background {
     // Constructor
-    constructor (ctx, radius) {
-        super(ctx, radius);
+    constructor (ctx, radius, color) {        
+        this._ctx = ctx;
+        this._radius = radius;
+        // color in the circle
+        this._ctx.fillStyle = color;
     }
     
     Draw () {
@@ -21,10 +24,8 @@ class Background extends ContextSuper {
 
             this._ctx.arc(xCoord, yCoord, this._radius, sAngle, eAngle, counterclockwise);
         
-        this._ctx.closePath();
+        this._ctx.closePath();        
         
-        // color in the circle
-        this._ctx.fillStyle = "green";
         this._ctx.fill();
     }
 }

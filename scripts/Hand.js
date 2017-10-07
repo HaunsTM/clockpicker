@@ -4,9 +4,14 @@ class Hand {
         // Constructor
         constructor (canAndCtx, hand, minNum, maxNum) {
             this._canAndCtx = canAndCtx;
-            this._hand = hand;
+            this._hand = hand;            
+            
+            
+            this._canAndCtx.context.strokeStyle = hand.color;
+
             this._minNum = minNum;
             this._maxNum = maxNum;
+
             this._numbersAndAngles =  (function (totNum) {
 
                 function getNumbersAndAngles (totNum){
@@ -27,8 +32,7 @@ class Hand {
                             numbersAndAngles.push(correspondingNumberAndAngle);
                         }
                     }
-    
-    
+
                     return numbersAndAngles;    
                 }
                 return getNumbersAndAngles(totNum);
@@ -47,15 +51,18 @@ class Hand {
 
         drawAngle (angle) {
             this.clear();
-            let context = this._canAndCtx.context;
 
-            context.beginPath();
-            context.lineWidth = this._hand.width;
-            context.lineCap = "round";
+            this._canAndCtx.context.beginPath();
+            this._canAndCtx.context.lineWidth = this._hand.width;
+            this._canAndCtx.context.lineCap = "round";
 
-            context.moveTo(0,0);
-            context.lineTo(this._hand.length*Math.cos(angle), this._hand.length*Math.sin(angle));
-            context.stroke();
+            let startPosition = {"x" : 0-0.1*this._hand.length*Math.cos(angle), "y": 0-0.1*this._hand.length*Math.sin(angle)};
+            let endPosition = {"x" : this._hand.length*Math.cos(angle), "y": this._hand.length*Math.sin(angle)}
+
+            this._canAndCtx.context.moveTo(startPosition.x, startPosition.y);
+            this._canAndCtx.context.lineTo(endPosition.x, endPosition.y);
+            
+            this._canAndCtx.context.stroke();
         }
 
         closestDefinedNumberAndAngle(realAngle) {

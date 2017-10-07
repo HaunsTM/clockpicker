@@ -42,7 +42,7 @@
             this._canAndCtxHandsHours = this.SizedAndCenteredOrigoCanvasAndContext(domSelectors.hands.hours, this._commonVariables);
             this._canAndCtxHandsMinutes = this.SizedAndCenteredOrigoCanvasAndContext(domSelectors.hands.minutes, this._commonVariables);
 
-            this._background = new Background(this._canAndCtxBackground.context,this._commonVariables.radius, this._commonVariables.time.hour.start, this._commonVariables.time.hour.end );
+            this._background = new Background(this._canAndCtxBackground.context,this._commonVariables.radius, "rgba(0, 0, 255, 0.3)");
 
             this._digitsHours = new Digits(this._canAndCtxDigitsHours.context,this._commonVariables.radius, this._commonVariables.time.hour.start, this._commonVariables.time.hour.end );
             this._digitsMinutes = new Digits(this._canAndCtxDigitsMinutes.context,this._commonVariables.radius, this._commonVariables.time.minute.start, this._commonVariables.time.minute.end );

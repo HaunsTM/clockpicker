@@ -14,8 +14,8 @@
             "hour" : {
                 "hand" : {
                     "length" : radius*0.40,
-                    "width" : 4,
-                    "color" :  "#ff0000"
+                    "width" : 6,
+                    "color" :  'blue'
                 },
                 "start" : 1,
                 "end" : 12,
@@ -24,11 +24,11 @@
             "minute" : {
                 "hand" : {
                     "length" : radius*0.80,
-                    "width" : 4,
-                    "color" :  "black"
+                    "width" : 6,
+                    "color" :  "#c82124"
                 },
                 "start" : 1,
-                "end" : 12,
+                "end" : 60,
                 "lastSelectedAngle" : 0
             },
             "second" : {
