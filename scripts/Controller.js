@@ -63,7 +63,7 @@
                     this._background.Draw();
         
                     this._utmostCanvas = this._canAndCtxBackground.canvas.parentElement.lastElementChild;
-                    this._utmostCanvas.addEventListener("mouseup", this.MouseUp.bind(this),  false);
+                    this._utmostCanvas.addEventListener("mousemove", this.MouseDown.bind(this), false);
                     nextState = "DRAW_INITIAL_TIME";
 
                     //break;
@@ -156,14 +156,18 @@
         }
 
         MouseDown(mouseEvent){
-            var mousePos = this.GetTranslatedMousePosition(mouseEvent, this._commonVariables);            
+            var mousePos = this.GetTranslatedMousePosition(mouseEvent, this._commonVariables);
+            let endAngle = this.GetAngle(mousePos);
+            
+            let closestHourAngle = this._handsHours.closestDefinedNumberAndAngle(endAngle.rad).angle;
+            this._handsHours.drawAngle(closestHourAngle);
         }
 
         MouseUp(mouseEvent){
             
             // http://www.html5canvastutorials.com/advanced/html5-canvas-mouse-coordinates/
             var mousePos = this.GetTranslatedMousePosition(mouseEvent, this._commonVariables);
-            
+
             this._commonVariables.mouse.position.moveEnd.x = mousePos.x;
             this._commonVariables.mouse.position.moveEnd.y = mousePos.y;
 
