@@ -18,11 +18,13 @@ class Hand {
                 let angleBetweenNumbers =  2 * Math.PI / totNum
                 let numbersAndAngles = [];
 
+                let aWholeRound = 2 * Math.PI;
+
                 for ( let r = 0; r < 2; r++) {
                     for ( let i = 0; i < totNum ; i++){
                         let number = i+1;
 
-                        let angle = number < (totNum/4) ? (3/2*Math.PI) + angleBetweenNumbers*(i+1) : angleBetweenNumbers*((i+1)-totNum/4)
+                        let angle = number < (totNum/4) ? (3/2*Math.PI) + angleBetweenNumbers*(i+1) : aWholeRound + angleBetweenNumbers*((i+1)-totNum/4);
                         angle += r*2*Math.PI;
                         
                         //rad = rad - parseInt( rad / ( 2 * Math.PI ) ) * ( 2 * Math.PI );
@@ -31,7 +33,7 @@ class Hand {
                         numbersAndAngles.push(correspondingNumberAndAngle);
                     }
                 }
-
+                
                 return numbersAndAngles;    
             }
             return getNumbersAndAngles(totNum);
@@ -49,6 +51,7 @@ class Hand {
     }
 
     handLinePoints(angle) {
+        //returns drawing coordinates for a hand
 
         let startPosition = {
             "x" : 0 - 0.1*this._hand.length*Math.cos(angle), 
@@ -94,6 +97,11 @@ class Hand {
 
             if ( isBetween ) {
                 let nAAverage = ( nA0.angle + nA1.angle) / 2;
+                console.log('--------------');
+                console.log('realAngle: ' + realAngle);
+                console.log('nA0: ' + nA0.angle);
+                console.log('nA1: ' + nA1.angle);
+                console.log('--------------');
                 if ( realAngle < nAAverage ) {
                     return nA0;
                 } else {
@@ -127,7 +135,6 @@ class Hand {
                 let number = self._numbersAndAngles[i].number;
                 let angle = self._numbersAndAngles[i].angle;
                 if ( (minAngle < angle && angle < maxAngle) || ( rotateClockwise && ( angleBeforeHandPass > angleAfterHandPass )) || ( !rotateClockwise && ( angleBeforeHandPass < angleAfterHandPass )) ){
-                    //debugger;
                     //passing number
                     return number;
                 }
@@ -145,8 +152,7 @@ class Hand {
                     "bubbles": true,
                     "cancelable": true
                 }
-            )
-            
+            )            
             self._canAndCtx.canvas.dispatchEvent(event);
         }
 
