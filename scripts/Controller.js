@@ -24,15 +24,21 @@
                 "mouse" : {
                     "dragging" : false,
                     "position" : {
-                        "x" : 0,
-                        "y" : 0
+                        "start" : {
+                            "x" : 0,
+                            "y" : 0
+                        },
+                        "end" : {
+                            "x" : 0,
+                            "y" : 0
+                        }
                     }
                 },
                 "radius" : radius,
                 "time" : {
                     "hour" : {
                         "hand" : {
-                            "length" : radius*0.40,
+                            "length" : radius*0.50,
                             "width" : 6,
                             "color" :  'blue'
                         },
@@ -146,7 +152,7 @@
                 rad = Math.atan(Math.abs(mousePos.x/mousePos.y)) + (3/2)*Math.PI;
             }
             rad += aWholeRound;
-            
+
             return {"rad":rad, "deg":rad*360/(2*Math.PI)};
         }
 
@@ -154,8 +160,8 @@
             this._digitsHours.clear();
             this._digitsMinutes.clear();
 
-            this._handsHours.clear();
-            this._handsMinutes.clear();
+            //this._handsHours.clear();
+            //this._handsMinutes.clear();
         }
 
         Statemachine ( ) {
@@ -184,13 +190,14 @@
                 break;
 
                 case "SELECT_HOUR":
+                    let endAngleH = this.GetAngle( this._commonVariables.mouse.position.end ? this._commonVariables.mouse.position.end : this._commonVariables.mouse.position.start );
+                    this._commonVariables.time.hour.lastSelectedAngle = this._handsHours.closestDefinedNumberAndAngle(endAngleH.rad).angle;
 
-                    if ( this._commonVariables.mouse.dragging ) {                        
-                        let endAngle = this.GetAngle(this._commonVariables.mouse.position);
-                        this._commonVariables.time.hour.lastSelectedAngle = this._handsHours.closestDefinedNumberAndAngle(endAngle.rad).angle;
+                    if ( this._commonVariables.mouse.dragging ) {
                         
                         this._handsHours.drawAngle(this._commonVariables.time.hour.lastSelectedAngle);
                     } else {
+                        this._handsHours.drawAngle(this._commonVariables.time.hour.lastSelectedAngle);
                         this._state = "SELECT_MINUTE_PREPARE";
                         this.Statemachine();
                     }
@@ -209,14 +216,14 @@
                     
                 break;
 
-                case "SELECT_MINUTE":                
-
-                    if ( this._commonVariables.mouse.dragging ) {                        
-                        let endAngle = this.GetAngle(this._commonVariables.mouse.position);
-                        this._commonVariables.time.minute.lastSelectedAngle = this._handsMinutes.closestDefinedNumberAndAngle(endAngle.rad).angle;
+                case "SELECT_MINUTE":
+                    let endAngleM = this.GetAngle( this._commonVariables.mouse.position.end ? this._commonVariables.mouse.position.end : this._commonVariables.mouse.position.start );
+                    this._commonVariables.time.minute.lastSelectedAngle = this._handsMinutes.closestDefinedNumberAndAngle(endAngleM.rad).angle;
+                    if ( this._commonVariables.mouse.dragging ) {
                         
                         this._handsMinutes.drawAngle(this._commonVariables.time.minute.lastSelectedAngle);
                     } else {
+                        this._handsMinutes.drawAngle(this._commonVariables.time.minute.lastSelectedAngle);
                         this._state = "DRAW_INITIAL_TIME";
                         this.Statemachine();
                     }
@@ -226,19 +233,21 @@
 
         MouseDown( e ) {
             this._commonVariables.mouse.dragging = true;
-            this._commonVariables.mouse.position = this.GetTranslatedMousePosition( e , this._commonVariables);
+            this._commonVariables.mouse.position.start = this.GetTranslatedMousePosition( e , this._commonVariables);
+            this._commonVariables.mouse.position.end = null;
             this.Statemachine ();
         }
 
         MouseMove( e ){
             if ( this._commonVariables.mouse.dragging ) {
-                this._commonVariables.mouse.position = this.GetTranslatedMousePosition( e , this._commonVariables);
+                this._commonVariables.mouse.position.end = this.GetTranslatedMousePosition( e , this._commonVariables);
                 this.Statemachine ();
             }
         }
 
         MouseUp( e ) {            
             this._commonVariables.mouse.dragging = false;
+            this._commonVariables.mouse.position.end = this.GetTranslatedMousePosition( e , this._commonVariables);
             this.Statemachine ();
         }
 
