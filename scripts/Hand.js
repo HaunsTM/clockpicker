@@ -69,7 +69,51 @@ class Hand {
         }
     }
 
-    drawAngle (angle) {
+    raiseAnimationIsPassingNumber (number){
+        var event = new CustomEvent(
+            "onAnimationIsPassingNumber", 
+            {
+                "detail": {
+                    "passedNumber": number
+                },
+                "bubbles": true,
+                "cancelable": true
+            }
+        )            
+        this._canAndCtx.canvas.dispatchEvent(event);
+    }
+    
+    raiseHandDrawedOverNumber (number){
+        var event = new CustomEvent(
+            "onHandDrawedOverNumber", 
+            {
+                "detail": {
+                    "passedNumber": number
+                },
+                "bubbles": true,
+                "cancelable": true
+            }
+        )            
+        this._canAndCtx.canvas.dispatchEvent(event);
+    }    
+
+    angle(number) {
+        let length = self._numbersAndAngles.length;
+        
+        for( let i = 0; i < length; i++ ) {
+            if(self._numbersAndAngles[i].number === number) {
+                return self._numbersAndAngles[i].angle;
+            }
+        }
+        return null;
+    }
+
+    drawNumber (number, raiseHandDrawedOverNumberEvent) {
+        angle = this.angle(number);
+        return drawAngle (angle, raiseHandDrawedOverNumberEvent);
+    }
+
+    drawAngle (angle, raiseHandDrawedOverNumberEvent) {
         this.clear();
 
         this._canAndCtx.context.beginPath();
@@ -82,6 +126,10 @@ class Hand {
         this._canAndCtx.context.lineTo(hLP.eP.x, hLP.eP.y);
         
         this._canAndCtx.context.stroke();
+        if (raiseHandDrawedOverNumberEvent) {
+            let number = this.closestDefinedNumberAndAngle(angle).number;
+            this.raiseHandDrawedOverNumber(number);
+        }
     }
 
     closestDefinedNumberAndAngle(realAngle) {
@@ -97,11 +145,6 @@ class Hand {
 
             if ( isBetween ) {
                 let nAAverage = ( nA0.angle + nA1.angle) / 2;
-                console.log('--------------');
-                console.log('realAngle: ' + realAngle);
-                console.log('nA0: ' + nA0.angle);
-                console.log('nA1: ' + nA1.angle);
-                console.log('--------------');
                 if ( realAngle < nAAverage ) {
                     return nA0;
                 } else {
@@ -142,20 +185,6 @@ class Hand {
             return null;
         }
 
-        let raiseAnimationIsPassingNumber = function (number){
-            var event = new CustomEvent(
-                "onAnimationIsPassingNumber", 
-                {
-                    "detail": {
-                        "passedNumber": number
-                    },
-                    "bubbles": true,
-                    "cancelable": true
-                }
-            )            
-            self._canAndCtx.canvas.dispatchEvent(event);
-        }
-
         let nextAngle = function (curAngle, endAngle) {
             let nextAngleCandidate;
 
@@ -184,7 +213,8 @@ class Hand {
         let  curAngle = startAngle;
 
         animate_inner = function () {
-            self.drawAngle(curAngle);
+            let raiseHandDrawedOverNumber = false;
+            self.drawAngle(curAngle, raiseHandDrawedOverNumber);
             let angleToDraw = nextAngle(curAngle, endAngle);
 
             //are we done

@@ -44,7 +44,7 @@
                         },
                         "start" : 1,
                         "end" : 12,
-                        "lastSelectedAngle" : 0                
+                        "lastSelectedAngle" : 2 * 3/2 * Math.PI,              
                     },
                     "minute" : {
                         "hand" : {
@@ -54,7 +54,7 @@
                         },
                         "start" : 1,
                         "end" : 60,
-                        "lastSelectedAngle" : 0
+                        "lastSelectedAngle" : 2 * 3/2 * Math.PI,
                     },
                     "second" : {
                         "hand" : {
@@ -90,6 +90,11 @@
             this._utmostCanvas.addEventListener("mousedown", this.MouseDown.bind(this), false);
             this._utmostCanvas.addEventListener("mousemove", this.MouseMove.bind(this), false);
             this._utmostCanvas.addEventListener("mouseup", this.MouseUp.bind(this), false);
+            
+            this._canAndCtxHandsHours.canvas.addEventListener("onHandDrawedOverNumber", this.NewHour.bind(this), false);
+            this._canAndCtxHandsHours.canvas.addEventListener("onAnimationIsPassingNumber", this.NewHour.bind(this), false);            
+            this._canAndCtxHandsMinutes.canvas.addEventListener("onHandDrawedOverNumber", this.NewMinute.bind(this), false);
+            this._canAndCtxHandsMinutes.canvas.addEventListener("onAnimationIsPassingNumber", this.NewMinute.bind(this), false);
 
             this._state = "DRAW_INITIAL_TIME";
 
@@ -165,15 +170,15 @@
         }
 
         Statemachine ( ) {
-
+            
             switch (this._state) {
                 case "DRAW_INITIAL_TIME":
                     this.ClearDynamicCanvas ()
 
                     this._digitsHours.Draw();
                     
-                    this._handsHours.drawAngle(this._commonVariables.time.hour.lastSelectedAngle);    
-                    this._handsMinutes.drawAngle(this._commonVariables.time.minute.lastSelectedAngle);
+                    this._handsHours.drawAngle(this._commonVariables.time.hour.lastSelectedAngle, true);    
+                    this._handsMinutes.drawAngle(this._commonVariables.time.minute.lastSelectedAngle, true);
                     
                     this._state = "SELECT_HOUR_PREPARE";
                 break;
@@ -184,7 +189,7 @@
 
                     this._digitsHours.Draw();
 
-                    this._handsHours.drawAngle(this._commonVariables.time.hour.lastSelectedAngle);
+                    this._handsHours.drawAngle(this._commonVariables.time.hour.lastSelectedAngle, true);
                     
                     this._state = "SELECT_HOUR";
                 break;
@@ -195,9 +200,9 @@
 
                     if ( this._commonVariables.mouse.dragging ) {
                         
-                        this._handsHours.drawAngle(this._commonVariables.time.hour.lastSelectedAngle);
+                        this._handsHours.drawAngle(this._commonVariables.time.hour.lastSelectedAngle, true);
                     } else {
-                        this._handsHours.drawAngle(this._commonVariables.time.hour.lastSelectedAngle);
+                        this._handsHours.drawAngle(this._commonVariables.time.hour.lastSelectedAngle, true);
                         this._state = "SELECT_MINUTE_PREPARE";
                         this.Statemachine();
                     }
@@ -210,7 +215,7 @@
 
                     this._digitsMinutes.Draw();
                     
-                    this._handsMinutes.drawAngle(this._commonVariables.time.minute.lastSelectedAngle);
+                    this._handsMinutes.drawAngle(this._commonVariables.time.minute.lastSelectedAngle, true);
 
                     this._state = "SELECT_MINUTE";
                     
@@ -221,9 +226,9 @@
                     this._commonVariables.time.minute.lastSelectedAngle = this._handsMinutes.closestDefinedNumberAndAngle(endAngleM.rad).angle;
                     if ( this._commonVariables.mouse.dragging ) {
                         
-                        this._handsMinutes.drawAngle(this._commonVariables.time.minute.lastSelectedAngle);
+                        this._handsMinutes.drawAngle(this._commonVariables.time.minute.lastSelectedAngle, true);
                     } else {
-                        this._handsMinutes.drawAngle(this._commonVariables.time.minute.lastSelectedAngle);
+                        this._handsMinutes.drawAngle(this._commonVariables.time.minute.lastSelectedAngle, true);
                         this._state = "DRAW_INITIAL_TIME";
                         this.Statemachine();
                     }
@@ -249,6 +254,14 @@
             this._commonVariables.mouse.dragging = false;
             this._commonVariables.mouse.position.end = this.GetTranslatedMousePosition( e , this._commonVariables);
             this.Statemachine ();
+        }
+
+        NewMinute (e) {
+            console.log(e.detail.passedNumber);
+        }
+
+        NewHour (e) {
+            console.log(e.detail.passedNumber);
         }
 
         _MouseUp(mouseEvent){
