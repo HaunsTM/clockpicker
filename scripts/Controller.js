@@ -87,6 +87,7 @@
             this._handsMinutes = new Hand(this._canAndCtxHandsMinutes,this._commonVariables.time.minute.hand, this._commonVariables.time.minute.start, this._commonVariables.time.minute.end);
 
             this._utmostCanvas = this._canAndCtxBackground.canvas.parentElement.lastElementChild;
+            this._utmostContext = this._utmostCanvas.getContext("2d");
 
             this._background.Draw();
 
@@ -250,6 +251,28 @@
             if ( this._commonVariables.mouse.dragging ) {
                 this._commonVariables.mouse.position.end = this.GetTranslatedMousePosition( e , this._commonVariables);
                 this.Statemachine ();
+            } else {
+                var p = this.GetMousePos( e , this._commonVariables);
+
+                var details = document.getElementById('details');
+                details.innerHTML = "<table>"+                
+                "<tr>"+
+                    "<td>x</td>"+
+                    "<td>y</td>"+
+                "</tr>"+
+                "<tr>"+
+                    "<td>" + p.x + "</td>"+
+                    "<td>" + p.y + "</td>"+
+                "</tr>"+
+            "</table>";
+            debugger;
+            //TODO: For each canvas, check the color of the pixel at the mouse position. 
+
+                var pixel = this._utmostContext.getImageData(p.x, p.y, 1, 1);
+                var data = pixel.data;
+                var rgba = 'rgba(' + data[0] + ', ' + data[1] +
+                           ', ' + data[2] + ', ' + (data[3] / 255) + ')';
+                console.log('x: 0' + rgba);
             }
         }
 
