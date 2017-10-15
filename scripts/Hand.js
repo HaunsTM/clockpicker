@@ -22,12 +22,11 @@ class Hand {
 
                 for ( let r = 0; r < 2; r++) {
                     for ( let i = 0; i < totNum ; i++){
-                        let number = i+1;
+                        let number = i;
 
-                        let angle = number < (totNum/4) ? (3/2*Math.PI) + angleBetweenNumbers*(i+1) : aWholeRound + angleBetweenNumbers*((i+1)-totNum/4);
+                        let angle = number < (totNum/4) ? (3/2*Math.PI) + angleBetweenNumbers*number : aWholeRound + angleBetweenNumbers*(number-totNum/4);
                         angle += r*2*Math.PI;
                         
-                        //rad = rad - parseInt( rad / ( 2 * Math.PI ) ) * ( 2 * Math.PI );
                         let correspondingNumberAndAngle = {"number": number, "angle": angle};
 
                         numbersAndAngles.push(correspondingNumberAndAngle);

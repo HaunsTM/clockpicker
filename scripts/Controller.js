@@ -2,7 +2,7 @@
     class Controller {
 
         // Constructor
-        constructor (domSelectors, canWidth, canHeight, radius) {
+        constructor (domAnalogSelectors, domDigitalSelectors, canWidth, canHeight, radius) {
 
             this._radius = radius;
 
@@ -69,11 +69,14 @@
                 }
             }
 
-            this._canAndCtxBackground = this.SizedAndCenteredOrigoCanvasAndContext(domSelectors.background, this._commonVariables);
-            this._canAndCtxDigitsHours = this.SizedAndCenteredOrigoCanvasAndContext(domSelectors.digits.hours, this._commonVariables);
-            this._canAndCtxDigitsMinutes = this.SizedAndCenteredOrigoCanvasAndContext(domSelectors.digits.minutes, this._commonVariables);
-            this._canAndCtxHandsHours = this.SizedAndCenteredOrigoCanvasAndContext(domSelectors.hands.hours, this._commonVariables);
-            this._canAndCtxHandsMinutes = this.SizedAndCenteredOrigoCanvasAndContext(domSelectors.hands.minutes, this._commonVariables);
+            this._outputDigHours = document.querySelector(domDigitalSelectors.hours);
+            this._outputDigMinutes = document.querySelector(domDigitalSelectors.minutes);
+
+            this._canAndCtxBackground = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.background, this._commonVariables);
+            this._canAndCtxDigitsHours = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.digits.hours, this._commonVariables);
+            this._canAndCtxDigitsMinutes = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.digits.minutes, this._commonVariables);
+            this._canAndCtxHandsHours = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.hands.hours, this._commonVariables);
+            this._canAndCtxHandsMinutes = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.hands.minutes, this._commonVariables);
 
             this._background = new Background(this._canAndCtxBackground.context,this._commonVariables.radius, "rgba(0, 0, 255, 0.3)");
 
@@ -257,12 +260,13 @@
         }
 
         NewMinute (e) {
-            console.log(e.detail.passedNumber);
+            this._outputDigMinutes.innerHTML = e.detail.passedNumber < 10 ? '0' + e.detail.passedNumber : e.detail.passedNumber;
         }
 
         NewHour (e) {
-            console.log(e.detail.passedNumber);
+            this._outputDigHours.innerHTML = e.detail.passedNumber < 10 ? '0' + e.detail.passedNumber : e.detail.passedNumber;
         }
+        
 
         _MouseUp(mouseEvent){
             

@@ -10,7 +10,7 @@
 
         var radius = CANVAS_HEIGHT/2;
 
-        let domSelectors = {
+        let domAnalogSelectors = {
             "background" : "#canvBackground",
             "digits" : {
                 "hours" : "#canvDigitsHours",
@@ -25,8 +25,11 @@
                 "minutes" : "#canvMarkersMinutes",
             }
         }
-
-        var controller = new Controller(domSelectors, CANVAS_WIDTH, CANVAS_HEIGHT, radius);
+        let domDigitalSelectors = { 
+            "hours" : "#digHours",
+            "minutes" : "#digMinutes"
+        }
+        var controller = new Controller(domAnalogSelectors, domDigitalSelectors, CANVAS_WIDTH, CANVAS_HEIGHT, radius);
     }
 
     start();
