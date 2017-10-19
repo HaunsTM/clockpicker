@@ -265,14 +265,18 @@
                     "<td>" + p.y + "</td>"+
                 "</tr>"+
             "</table>";
-            debugger;
+            //debugger;
             //TODO: For each canvas, check the color of the pixel at the mouse position. 
 
                 var pixel = this._utmostContext.getImageData(p.x, p.y, 1, 1);
                 var data = pixel.data;
+                var r = data[0];
+                var g = data[1];
+                var b = data[2];
                 var rgba = 'rgba(' + data[0] + ', ' + data[1] +
                            ', ' + data[2] + ', ' + (data[3] / 255) + ')';
-                console.log('x: 0' + rgba);
+                           
+                console.log(this._handsMinutes.mouseIsOver(p));
             }
         }
 

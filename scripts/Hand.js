@@ -42,11 +42,17 @@ class Hand {
     
     clear () {            
         let context = this._canAndCtx.context;
-        var width = context.width;
-        var height = context.height;
+        let width = context.width;
+        let height = context.height;
 
         //clear the entire area
         context.clearRect(0-width/2, 0-height/2, width, height);
+    }
+
+    mouseIsOver (mousePosition) {
+        var pixel = this._canAndCtx.context.getImageData(mousePosition.x, mousePosition.y, 1, 1);
+        var rgb = pixel.data;
+        return this._canAndCtx.context.strokeStyle === '#' + ((rgb[0] << 16) | (rgb[1] << 8) | rgb[2]).toString(16);
     }
 
     handLinePoints(angle) {
