@@ -7,17 +7,24 @@
     </head>
 
     <body>
-
         <div id="details"></div>
-
-        <div id="container" >
-            <canvas id="canvBackground"></canvas>
-            <canvas id="canvDigitsHours"></canvas>
-            <canvas id="canvDigitsMinutes"></canvas>
-            <canvas id="canvHandsMinutes"></canvas>
-            <canvas id="canvHandsHours"></canvas>
-            <!-- <canvas id="canvMarkersHours"></canvas>
-            <canvas id="canvMarkersMinutes"></canvas> -->
+        <div id="container">
+            <div style="border:1px solid red; display: block;">
+                <div id="analog">
+                    <canvas id="canvBackground"></canvas>
+                    <canvas id="canvDigitsHours"></canvas>
+                    <canvas id="canvDigitsMinutes"></canvas>
+                    <canvas id="canvHandsMinutes"></canvas>
+                    <canvas id="canvHandsHours"></canvas>
+                    <!-- <canvas id="canvMarkersHours"></canvas>
+                    <canvas id="canvMarkersMinutes"></canvas> -->
+                </div>
+            </div>
+            <div id="digital">
+                <span id="digHours"></span>
+                <span>:</span>
+                <span id="digMinutes"></span>
+            </div>
         </div>
         
         <script src="./scripts/Background.js"></script>

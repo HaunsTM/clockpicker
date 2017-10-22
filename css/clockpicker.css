@@ -1,15 +1,26 @@
+@font-face{
+  font-family:'digital-clock-font';
+  src: url('fonts/7segment.woff');
+ }
+
 #container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+#analog {
   position: relative;
   display: block;
+  width: 250px;
+  height: 250px;
 }
 
-#container > canvas {
+#analog > canvas {
   position: absolute;
-  top: 0;
-  left: 0;
-  border: 1px solid yellow;
 }
 
-#canvHands {
-  cursor: crosshair;
+#digital {
+  font-family: digital-clock-font;
+  
+  color: darkred;
 }
