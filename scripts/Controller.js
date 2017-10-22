@@ -44,7 +44,7 @@
                         },
                         "start" : 1,
                         "end" : 12,
-                        "lastSelectedAngle" : 2 * 3/2 * Math.PI,              
+                        "lastSelectedAngle" : 2 * 3/4 * Math.PI,              
                     },
                     "minute" : {
                         "hand" : {
@@ -54,7 +54,7 @@
                         },
                         "start" : 1,
                         "end" : 60,
-                        "lastSelectedAngle" : 2 * 3/2 * Math.PI,
+                        "lastSelectedAngle" : 2 * 3/4 * Math.PI,
                     },
                     "second" : {
                         "hand" : {
@@ -93,6 +93,7 @@
 
             this._utmostCanvas.addEventListener("mousedown", this.MouseDown.bind(this), false);
             this._utmostCanvas.addEventListener("mousemove", this.MouseMove.bind(this), false);
+            this._utmostCanvas.addEventListener("mouseout", this.MouseOut.bind(this), false);
             this._utmostCanvas.addEventListener("mouseup", this.MouseUp.bind(this), false);
             
             this._canAndCtxHandsHours.canvas.addEventListener("onHandDrawedOverNumber", this.NewHour.bind(this), false);
@@ -253,31 +254,27 @@
                 this.Statemachine ();
             } else {
                 var p = this.GetMousePos( e , this._commonVariables);
+                
+                switch (true){
+                    case this._handsHours.mouseIsOver(p):
+                        this._state = "SELECT_HOUR_PREPARE";                  
+                        this.Statemachine();
+                        break;
+                    
+                    case this._handsMinutes.mouseIsOver(p):
+                        this._state = "SELECT_MINUTE_PREPARE";                        
+                        this.Statemachine();
+                        break;
 
-                var details = document.getElementById('details');
-                details.innerHTML = "<table>"+                
-                "<tr>"+
-                    "<td>x</td>"+
-                    "<td>y</td>"+
-                "</tr>"+
-                "<tr>"+
-                    "<td>" + p.x + "</td>"+
-                    "<td>" + p.y + "</td>"+
-                "</tr>"+
-            "</table>";
-            //debugger;
-            //TODO: For each canvas, check the color of the pixel at the mouse position. 
-
-                var pixel = this._utmostContext.getImageData(p.x, p.y, 1, 1);
-                var data = pixel.data;
-                var r = data[0];
-                var g = data[1];
-                var b = data[2];
-                var rgba = 'rgba(' + data[0] + ', ' + data[1] +
-                           ', ' + data[2] + ', ' + (data[3] / 255) + ')';
-                           
-                console.log(this._handsMinutes.mouseIsOver(p));
+                    default:
+                        this._state = "SELECT_HOUR_PREPARE";
+                        this.Statemachine();
+                }
             }
+        }
+
+        MouseOut ( e ) {
+            this._commonVariables.mouse.dragging = false;
         }
 
         MouseUp( e ) {            
