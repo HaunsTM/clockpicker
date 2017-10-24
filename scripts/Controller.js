@@ -77,6 +77,8 @@
             this._canAndCtxDigitsMinutes = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.digits.minutes, this._commonVariables);
             this._canAndCtxHandsHours = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.hands.hours, this._commonVariables);
             this._canAndCtxHandsMinutes = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.hands.minutes, this._commonVariables);
+            this._canAndCtxMarkersHours = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.markers.hours, this._commonVariables);
+            this._canAndCtxMarkersMinutes = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.markers.minutes, this._commonVariables);
 
             this._background = new Background(this._canAndCtxBackground.context,this._commonVariables.radius, "rgba(0, 0, 255, 0.3)");
 
@@ -86,10 +88,16 @@
             this._handsHours = new Hand(this._canAndCtxHandsHours, this._commonVariables.time.hour.hand, this._commonVariables.time.hour.start, this._commonVariables.time.hour.end );
             this._handsMinutes = new Hand(this._canAndCtxHandsMinutes,this._commonVariables.time.minute.hand, this._commonVariables.time.minute.start, this._commonVariables.time.minute.end);
 
+            this._markersHours = new Markers(this._canAndCtxMarkersHours.context,this._commonVariables.radius, this._commonVariables.time.hour.start, this._commonVariables.time.hour.end );
+            this._markersMinutes = new Markers(this._canAndCtxMarkersMinutes.context,this._commonVariables.radius, this._commonVariables.time.minute.start, this._commonVariables.time.minute.end );
+
             this._utmostCanvas = this._canAndCtxBackground.canvas.parentElement.lastElementChild;
             this._utmostContext = this._utmostCanvas.getContext("2d");
 
             this._background.Draw();
+
+            this._markersHours.draw();
+            this._markersMinutes.draw();
 
             this._utmostCanvas.addEventListener("mousedown", this.MouseDown.bind(this), false);
             this._utmostCanvas.addEventListener("mousemove", this.MouseMove.bind(this), false);
