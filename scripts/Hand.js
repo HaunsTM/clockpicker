@@ -176,9 +176,9 @@ class Hand {
         let willPassNumber = function (angleBeforeHandPass, angleAfterHandPass){
             let length = self._numbersAndAngles.length;
         
-            //angleAfterHandPass = angleAfterHandPass - parseInt( angleAfterHandPass / ( 2 * Math.PI ) ) * ( 2 * Math.PI );
             let minAngle = Math.min(angleBeforeHandPass, angleAfterHandPass);
             let maxAngle = Math.max(angleBeforeHandPass, angleAfterHandPass);
+            
             for( let i = 0; i < length; i++ ) {
                 let number = self._numbersAndAngles[i].number;
                 let angle = self._numbersAndAngles[i].angle;
@@ -218,15 +218,18 @@ class Hand {
         let  curAngle = startAngle;
 
         animate_inner = function () {
+
             let raiseHandDrawedOverNumber = false;
             self.drawAngle(curAngle, raiseHandDrawedOverNumber);
             let angleToDraw = nextAngle(curAngle, endAngle);
 
-            //are we done
+            //are we done?
             if (angleToDraw && !isNaN(angleToDraw)) {
                 
                 let numberPassed = willPassNumber(curAngle, angleToDraw);
+
                 if ( numberPassed > 0 ) raiseAnimationIsPassingNumber( numberPassed );
+
                 curAngle = angleToDraw;
                 requestAnimationFrame(function () {
                     animate_inner();

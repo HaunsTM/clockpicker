@@ -94,7 +94,7 @@
             this._utmostCanvas = this._canAndCtxBackground.canvas.parentElement.lastElementChild;
             this._utmostContext = this._utmostCanvas.getContext("2d");
 
-            this._background.Draw();
+            this._background.draw();
 
             this._markersHours.draw();
             this._markersMinutes.draw();
@@ -297,53 +297,5 @@
 
         NewHour (e) {
             this._outputDigHours.innerHTML = e.detail.passedNumber < 10 ? '0' + e.detail.passedNumber : e.detail.passedNumber;
-        }
-        
-
-        _MouseUp(mouseEvent){
-            
-            // http://www.html5canvastutorials.com/advanced/html5-canvas-mouse-coordinates/
-            var mousePos = this.GetTranslatedMousePosition(mouseEvent, this._commonVariables);
-
-            this._commonVariables.mouse.position.moveEnd.x = mousePos.x;
-            this._commonVariables.mouse.position.moveEnd.y = mousePos.y;
-
-            let startAngle = this.GetAngle({"x": this._commonVariables.mouse.position.moveStart.x, 
-                                            "y": this._commonVariables.mouse.position.moveStart.y});
-            let endAngle = this.GetAngle({"x": this._commonVariables.mouse.position.moveEnd.x, 
-                                            "y": this._commonVariables.mouse.position.moveEnd.y});
-            
-            var details = document.getElementById('details');
-            details.innerHTML = "<table>"+
-                                    "<tr><td colspan=2>moveStart</td><td colspan=2>moveEnd</td></tr>"+
-                                    "<tr><td>x</td><td>y</td><td>x</td><td>y</td></tr>"+
-                                    
-                                    "<tr>"+
-                                        "<td>"+this._commonVariables.mouse.position.moveStart.x+"</td>"+
-                                        "<td>"+this._commonVariables.mouse.position.moveStart.y+"</td>"+
-                                        "<td>"+this._commonVariables.mouse.position.moveEnd.x+"</td>"+
-                                        "<td>"+this._commonVariables.mouse.position.moveEnd.y+"</td>"+
-                                    "</tr>"+
-                                "</table>" +
-                                "<p><b>startAngle: </b>" + Math.round(startAngle.deg) + " &deg; (" + Math.round(startAngle.rad * 100)/100 + " rad" +")</p>"+
-                                "<p><b>endAngle: </b>" + Math.round(endAngle.deg) + " &deg; ("+ Math.round(endAngle.rad * 100)/100 + "  rad" +")</p>";
-
-            switch (this._state) {
-                case "SELECT_HOUR" :
-                    let closestHourAngle = this._handsHours.closestDefinedNumberAndAngle(endAngle.rad).angle;
-                    this._handsHours.animate(this._commonVariables.time.hour.lastSelectedAngle, closestHourAngle);
-                    this._commonVariables.time.hour.lastSelectedAngle = closestHourAngle;
-                    break;
-                case "SELECT_MINUTE" :                    
-                    let closestMinuteAngle = this._handsMinutes.closestDefinedNumberAndAngle(endAngle.rad).angle;
-                    this._handsMinutes.animate(this._commonVariables.time.minute.lastSelectedAngle, closestMinuteAngle);
-                    this._commonVariables.time.minute.lastSelectedAngle = closestMinuteAngle;
-                    break;
-            }
-
-            this._commonVariables.mouse.position.moveStart.x = mousePos.x;
-            this._commonVariables.mouse.position.moveStart.y = mousePos.y;
-            
-            this.Statemachine();
-        }
+        }        
     }

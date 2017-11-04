@@ -8,11 +8,15 @@ class Background {
         this._ctx.fillStyle = color;
     }
     
-    Draw () {
+    clear(){
+        //clear the entire area
         var width = this._ctx.width;
         var height = this._ctx.height;
-        //clear the entire area
         this._ctx.clearRect(0-width/2, 0-height/2, width, height);
+    }
+    
+    draw () {
+        this.clear()
         
         // draw the circle
         this._ctx.beginPath();
