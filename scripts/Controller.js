@@ -1,14 +1,16 @@
 'use strict';
     class Controller {
-
+        
         // Constructor
         constructor (domAnalogSelectors, domDigitalSelectors, canWidth, canHeight, radius) {
 
             this._radius = radius;
+
             this._canvas = {
                 "width" : canWidth,
                 "height" : canHeight
             };
+
             this._context = {       
                 "width" : canWidth,
                 "height" : canHeight,
@@ -86,16 +88,23 @@
             this._handsHours = new Hand(this._canAndCtxHandsHours, this._time.hour.hand, this._time.hour.start, this._time.hour.end );
             this._handsMinutes = new Hand(this._canAndCtxHandsMinutes,this._time.minute.hand, this._time.minute.start, this._time.minute.end);
 
-            this._markersHours = new Markers(this._canAndCtxMarkersHours.context,this._radius, this._time.hour.start, this._time.hour.end );
-            this._markersMinutes = new Markers(this._canAndCtxMarkersMinutes.context,this._radius, this._time.minute.start, this._time.minute.end );
+            let markerHoursWidth  = "4";
+            let markerHoursFillStyle = "red";
+            let drawMarkerIntervalHours = "1";
+
+            let markerMinutesWidth = "2";
+            let markerMinutesFillStyle = "black";
+            let drawMarkerIntervalMinutes =  "5";
+
+           // ctx, markerWidth, markerFillStyle, radius, minNum, maxNum, drawInterval
+
+            this._markersHours = new Markers(this._canAndCtxMarkersHours.context, markerHoursWidth, markerHoursFillStyle, this._radius, this._time.hour.start, this._time.hour.end );
+            this._markersMinutes = new Markers(this._canAndCtxMarkersMinutes.context, markerMinutesWidth, markerMinutesFillStyle, this._radius, this._time.minute.start, this._time.minute.end, drawMarkerIntervalMinutes );
 
             this._utmostCanvas = this._canAndCtxBackground.canvas.parentElement.lastElementChild;
             this._utmostContext = this._utmostCanvas.getContext("2d");
 
             this._background.draw();
-
-            this._markersHours.draw();
-            this._markersMinutes.draw();
 
             this._utmostCanvas.addEventListener("mousedown", this.MouseDown.bind(this), false);
             this._utmostCanvas.addEventListener("mousemove", this.MouseMove.bind(this), false);
@@ -169,15 +178,15 @@
             }
             rad += aWholeRound;
 
-            return {"rad":rad, "deg":rad*360/(2*Math.PI)};
+            return rad;
         }
 
         ClearDynamicCanvas () {            
-            this._digitsHours.clear();
-            this._digitsMinutes.clear();
+            //this._digitsHours.clear();
+            //this._digitsMinutes.clear();
 
-            //this._handsHours.clear();
-            //this._handsMinutes.clear();
+            //this._markersHours.clear();
+            this._markersMinutes.clear();
         }
 
         Statemachine ( ) {
@@ -187,6 +196,7 @@
                     this.ClearDynamicCanvas ()
 
                     this._digitsHours.Draw();
+                    this._markersHours.draw();
                     
                     this._handsHours.drawAngle(this._time.hour.lastSelectedAngle, true);    
                     this._handsMinutes.drawAngle(this._time.minute.lastSelectedAngle, true);
@@ -198,7 +208,7 @@
                 
                     this.ClearDynamicCanvas ()
 
-                    this._digitsHours.Draw();
+                    this._markersHours.draw();
 
                     this._handsHours.drawAngle(this._time.hour.lastSelectedAngle, true);
                     
@@ -206,7 +216,8 @@
                 break;
 
                 case "SELECT_HOUR":
-                    this._time.hour.lastSelectedAngle = this._handsHours.closestDefinedNumberAndAngle(endAngleH.rad).angle;
+                let endAngleH = this.GetAngle( this._mouse.position.end ? this._mouse.position.end : this._mouse.position.start );
+                    this._time.hour.lastSelectedAngle = this._handsHours.closestDefinedNumberAndAngle(endAngleH).angle;
 
                     if ( this._mouse.dragging ) {
                         
@@ -221,9 +232,11 @@
                 
                 case "SELECT_MINUTE_PREPARE":
                 
-                    this.ClearDynamicCanvas ()
+                    this.ClearDynamicCanvas ();
 
-                    this._digitsMinutes.Draw();
+                    //this._digitsMinutes.Draw();
+                    
+                    this._markersMinutes.draw();
                     
                     this._handsMinutes.drawAngle(this._time.minute.lastSelectedAngle, true);
 
@@ -233,8 +246,11 @@
 
                 case "SELECT_MINUTE":
                     let endAngleM = this.GetAngle( this._mouse.position.end ? this._mouse.position.end : this._mouse.position.start );
-                    this._time.minute.lastSelectedAngle = this._handsMinutes.closestDefinedNumberAndAngle(endAngleM.rad).angle;
+                    this._time.minute.lastSelectedAngle = this._handsMinutes.closestDefinedNumberAndAngle(endAngleM).angle;
                     if ( this._mouse.dragging ) {
+                        this.ClearDynamicCanvas ();
+                        let curNumber = this._handsMinutes.closestDefinedNumberAndAngle(endAngleM).number;
+                        this._markersMinutes.draw(curNumber);
                         
                         this._handsMinutes.drawAngle(this._time.minute.lastSelectedAngle, true);
                     } else {
@@ -279,6 +295,7 @@
         }
 
         MouseOut ( e ) {
+            //occurs when mouse leaves canvas area
             this._mouse.dragging = false;
         }
 
