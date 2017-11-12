@@ -3,27 +3,36 @@
     //https://www.kirupa.com/html5/creating_simple_html5_canvas_animation.htm
     
     
-    var start = function ( ){
+    var start = function ( ) {
 
-        let domAnalogSelectors = {
-            "background" : "#canvBackground",
-            "digits" : {
-                "hours" : "#canvDigitsHours",
-                "minutes" : "#canvDigitsMinutes",
-            },
-            "hands" : {
-                "hours" : "#canvHandsHours",
-                "minutes" : "#canvHandsMinutes",
-            },
-            "markers" : {
-                "hours" : "#canvMarkersHours",
-                "minutes" : "#canvMarkersMinutes",
+        let dom = {};
+
+        dom = {
+            "selector" : { }
+        };
+
+        dom = {
+            "selector" : { 
+                "analog" : {
+                    "background" : "#canvBackground",
+                    "digits" : {
+                        "hours" : "#canvDigitsHours",
+                        "minutes" : "#canvDigitsMinutes",
+                    },
+                    "hands" : {
+                        "hours" : "#canvHandsHours",
+                        "minutes" : "#canvHandsMinutes",
+                    },
+                    "markers" : {
+                        "hours" : "#canvMarkersHours",
+                        "minutes" : "#canvMarkersMinutes",
+                    }
+                },
+                "digital" : {
+                    "hours" : "#digHours",
+                    "minutes" : "#digMinutes"
+                }
             }
-        }
-
-        let domDigitalSelectors = { 
-            "hours" : "#digHours",
-            "minutes" : "#digMinutes"
         }
         
         let settings = {
@@ -35,7 +44,7 @@
                 /**
                  * color : background color
                  */
-                "color" : "rgba(0, 0, 255, 0.3)"
+                "color" : "rgba(198, 82, 13, 0.3)"
             },
             "hour" : {
                 "hand" : {                    
@@ -57,9 +66,14 @@
                     "drawInterval" : 1,
                 },
                 "start" : 1,
-                "end" : 12,            
+                "end" : 12,
+                "lastSavedValue" : 13,         
             },
             "minute" : {
+                "hand" : {
+                    "width" : 6,
+                    "color" :  "#c82124",
+                },
                 "marker" : {
                     /**
                      * width : width in pixels of marker
@@ -70,17 +84,13 @@
                     "color" :  "black",
                     "drawInterval" : 5,
                 },
-                "hand" : {
-                    "width" : 6,
-                    "color" :  "#c82124",
-                },
                 "start" : 1,
                 "end" : 60,
+                "lastSavedValue" : 32,
             }
-        };
-        
+        };        
 
-        var controller = new Controller(domAnalogSelectors, domDigitalSelectors, settings);
+        var controller = new Controller(dom, settings);
     }
 
     start();

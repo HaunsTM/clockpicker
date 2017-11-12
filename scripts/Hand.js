@@ -74,17 +74,17 @@ class Hand {
         }
     }
 
-    raiseAnimationIsPassingNumber (number){
+    raiseAnimationFinished () {
         var event = new CustomEvent(
-            "onAnimationIsPassingNumber", 
+            "onAnimationFinished", 
             {
                 "detail": {
-                    "passedNumber": number
+                    "done": true
                 },
                 "bubbles": true,
                 "cancelable": true
             }
-        )            
+        )
         this._canAndCtx.canvas.dispatchEvent(event);
     }
     
@@ -103,11 +103,11 @@ class Hand {
     }    
 
     angle(number) {
-        let length = self._numbersAndAngles.length;
+        let length = this._numbersAndAngles.length;
         
         for( let i = 0; i < length; i++ ) {
-            if(self._numbersAndAngles[i].number === number) {
-                return self._numbersAndAngles[i].angle;
+            if (this._numbersAndAngles[i].number === number) {
+                return this._numbersAndAngles[i].angle;
             }
         }
         return null;
@@ -159,6 +159,12 @@ class Hand {
             i++;
         }
         return null;
+    }
+
+    animateNumber(startNumber, endNumber) {
+        let startAngle = this.angle(startNumber);
+        let endAngle = this.angle(endNumber);
+        this.animate(startAngle, endAngle);
     }
 
     animate(startAngle, endAngle) {
@@ -225,18 +231,18 @@ class Hand {
 
             //are we done?
             if (angleToDraw && !isNaN(angleToDraw)) {
-                
+                //nope...
                 let numberPassed = willPassNumber(curAngle, angleToDraw);
-
-                if ( numberPassed > 0 ) raiseAnimationIsPassingNumber( numberPassed );
 
                 curAngle = angleToDraw;
                 requestAnimationFrame(function () {
                     animate_inner();
                 });
+            } else {
+                //yes, we're done
+                self.raiseAnimationFinished();
             }
-        }  
-
+        }
         var requestID = requestAnimationFrame(animate_inner);
     }
 }

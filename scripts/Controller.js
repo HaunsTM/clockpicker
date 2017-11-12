@@ -2,7 +2,9 @@
     class Controller {
         
         // Constructor
-        constructor (domAnalogSelectors, domDigitalSelectors, settings) {
+        constructor (dom, settings) {
+
+            this._initialEventsToWaitFor = 2;
 
             this._radius = Math.max(settings.canvas.width, settings.canvas.height)/2;
 
@@ -45,6 +47,7 @@
                     },
                     "start" : settings.hour.start,
                     "end" : settings.hour.end,
+                    "lastSavedValue" : settings.hour.lastSavedValue,
                     "lastSelectedAngle" : 2 * 3/4 * Math.PI,              
                 },
                 "minute" : {
@@ -55,20 +58,21 @@
                     },
                     "start" : settings.minute.start,
                     "end" : settings.minute.end,
+                    "lastSavedValue" : settings.minute.lastSavedValue,
                     "lastSelectedAngle" : 2 * 3/4 * Math.PI,
                 }
             };
 
-            this._outputDigHours = document.querySelector(domDigitalSelectors.hours);
-            this._outputDigMinutes = document.querySelector(domDigitalSelectors.minutes);
+            this._outputDigHours = document.querySelector(dom.selector.digital.hours);
+            this._outputDigMinutes = document.querySelector(dom.selector.digital.minutes);
 
-            this._canAndCtxBackground = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.background);
-            this._canAndCtxDigitsHours = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.digits.hours);
-            this._canAndCtxDigitsMinutes = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.digits.minutes);
-            this._canAndCtxHandsHours = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.hands.hours);
-            this._canAndCtxHandsMinutes = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.hands.minutes);
-            this._canAndCtxMarkersHours = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.markers.hours);
-            this._canAndCtxMarkersMinutes = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.markers.minutes);
+            this._canAndCtxBackground = this.SizedAndCenteredOrigoCanvasAndContext(dom.selector.analog.background);
+            this._canAndCtxDigitsHours = this.SizedAndCenteredOrigoCanvasAndContext(dom.selector.analog.digits.hours);
+            this._canAndCtxDigitsMinutes = this.SizedAndCenteredOrigoCanvasAndContext(dom.selector.analog.digits.minutes);
+            this._canAndCtxHandsHours = this.SizedAndCenteredOrigoCanvasAndContext(dom.selector.analog.hands.hours);
+            this._canAndCtxHandsMinutes = this.SizedAndCenteredOrigoCanvasAndContext(dom.selector.analog.hands.minutes);
+            this._canAndCtxMarkersHours = this.SizedAndCenteredOrigoCanvasAndContext(dom.selector.analog.markers.hours);
+            this._canAndCtxMarkersMinutes = this.SizedAndCenteredOrigoCanvasAndContext(dom.selector.analog.markers.minutes);
 
             this._background = new Background(this._canAndCtxBackground.context,this._radius, settings.background.color);
 
@@ -84,22 +88,32 @@
             this._utmostCanvas = this._canAndCtxBackground.canvas.parentElement.lastElementChild;
             this._utmostContext = this._utmostCanvas.getContext("2d");
 
-            this._background.draw();
+            this._state = "DRAW_INITIAL_TIME";
 
+            this.statemachine ();
+        }
+        
+        initialExpectedAnimationEventOccurred () {
+
+            this._initialEventsToWaitFor --;
+
+            if (this._initialEventsToWaitFor < 1) {
+                this.addCanvasEventListeners();
+            }
+        }
+
+        addCanvasEventListeners() {
+            
             this._utmostCanvas.addEventListener("mousedown", this.MouseDown.bind(this), false);
             this._utmostCanvas.addEventListener("mousemove", this.MouseMove.bind(this), false);
             this._utmostCanvas.addEventListener("mouseout", this.MouseOut.bind(this), false);
             this._utmostCanvas.addEventListener("mouseup", this.MouseUp.bind(this), false);
             
-            this._canAndCtxHandsHours.canvas.addEventListener("onHandDrawedOverNumber", this.NewHour.bind(this), false);
-            this._canAndCtxHandsHours.canvas.addEventListener("onAnimationIsPassingNumber", this.NewHour.bind(this), false);            
-            this._canAndCtxHandsMinutes.canvas.addEventListener("onHandDrawedOverNumber", this.NewMinute.bind(this), false);
-            this._canAndCtxHandsMinutes.canvas.addEventListener("onAnimationIsPassingNumber", this.NewMinute.bind(this), false);
-
-            this._state = "DRAW_INITIAL_TIME";
-
-            this.Statemachine ();
-        }      
+            this._canAndCtxHandsHours.canvas.addEventListener("onHandDrawedOverNumber", this.newHour.bind(this), false);
+            this._canAndCtxHandsHours.canvas.addEventListener("onAnimationIsPassingNumber", this.newHour.bind(this), false);            
+            this._canAndCtxHandsMinutes.canvas.addEventListener("onHandDrawedOverNumber", this.newMinute.bind(this), false);
+            this._canAndCtxHandsMinutes.canvas.addEventListener("onAnimationIsPassingNumber", this.newMinute.bind(this), false);
+        }
 
         SizedAndCenteredOrigoCanvasAndContext (domSelector) {
             let curCanvas = document.querySelector( domSelector );
@@ -119,7 +133,7 @@
             }
         }
         
-        GetMousePos(e) {
+        getMousePos(e) {
 
             var rect = this._utmostCanvas.getBoundingClientRect();
 
@@ -129,8 +143,8 @@
             };
         }
         
-        GetTranslatedMousePosition(e) {            
-            var mousePos = this.GetMousePos(e);
+        getTranslatedMousePosition(e) {            
+            var mousePos = this.getMousePos(e);
             
             return {
                 x: mousePos.x - this._context.translation.initial.x,
@@ -138,7 +152,7 @@
             }
         }
 
-        GetAngle (mousePos) {
+        getAngle (mousePos) {
 
             let rad = 0;
             let aWholeRound = 2 * Math.PI;
@@ -161,28 +175,33 @@
             return rad;
         }
 
-        ClearDynamicCanvas () {
+        clearDynamicCanvas () {
             this._markersMinutes.clear();
         }
 
-        Statemachine ( ) {
+        statemachine ( ) {
             
             switch (this._state) {
                 case "DRAW_INITIAL_TIME":
-                    this.ClearDynamicCanvas ()
+                    this.clearDynamicCanvas ()
+
+                    this._background.draw();
 
                     this._digitsHours.Draw();
-                    this._markersHours.draw();
+                    this._markersHours.draw();                    
                     
-                    this._handsHours.drawAngle(this._time.hour.lastSelectedAngle, true);    
-                    this._handsMinutes.drawAngle(this._time.minute.lastSelectedAngle, true);
+                    this._canAndCtxHandsHours.canvas.addEventListener("onAnimationFinished", this.initialExpectedAnimationEventOccurred.bind(this), false);
+                    this._canAndCtxHandsHours.canvas.addEventListener("onAnimationFinished", this.initialExpectedAnimationEventOccurred.bind(this), false);
+                    
+                    this._handsHours.animateNumber(0, this._time.hour.lastSavedValue, true);    
+                    this._handsMinutes.animateNumber(0, this._time.minute.lastSavedValue, true);
                     
                     this._state = "SELECT_HOUR_PREPARE";
                 break;
 
                 case "SELECT_HOUR_PREPARE":
                 
-                    this.ClearDynamicCanvas ()
+                    this.clearDynamicCanvas ()
 
                     this._markersHours.draw();
 
@@ -192,7 +211,7 @@
                 break;
 
                 case "SELECT_HOUR":
-                    let endAngleH = this.GetAngle( this._mouse.position.end ? this._mouse.position.end : this._mouse.position.start );
+                    let endAngleH = this.getAngle( this._mouse.position.end ? this._mouse.position.end : this._mouse.position.start );
                     this._time.hour.lastSelectedAngle = this._handsHours.closestDefinedNumberAndAngle(endAngleH).angle;
 
                     if ( this._mouse.dragging ) {                        
@@ -200,14 +219,14 @@
                     } else {
                         this._handsHours.drawAngle(this._time.hour.lastSelectedAngle, true);
                         this._state = "SELECT_MINUTE_PREPARE";
-                        this.Statemachine();
+                        this.statemachine();
                     }
 
                 break;
                 
                 case "SELECT_MINUTE_PREPARE":
                 
-                    this.ClearDynamicCanvas ();
+                    this.clearDynamicCanvas ();
 
                     this._markersMinutes.draw();
                     
@@ -218,18 +237,18 @@
                 break;
 
                 case "SELECT_MINUTE":
-                    let endAngleM = this.GetAngle( this._mouse.position.end ? this._mouse.position.end : this._mouse.position.start );
+                    let endAngleM = this.getAngle( this._mouse.position.end ? this._mouse.position.end : this._mouse.position.start );
                     this._time.minute.lastSelectedAngle = this._handsMinutes.closestDefinedNumberAndAngle(endAngleM).angle;
                     if ( this._mouse.dragging ) {
-                        this.ClearDynamicCanvas ();
+                        this.clearDynamicCanvas ();
                         let curNumber = this._handsMinutes.closestDefinedNumberAndAngle(endAngleM).number;
                         this._markersMinutes.draw(curNumber);
                         
                         this._handsMinutes.drawAngle(this._time.minute.lastSelectedAngle, true);
                     } else {
                         this._handsMinutes.drawAngle(this._time.minute.lastSelectedAngle, true);
-                        this._state = "DRAW_INITIAL_TIME";
-                        this.Statemachine();
+                        this._state = "SELECT_HOUR_PREPARE";
+                        this.statemachine();
                     }
                 break;
             }            
@@ -237,32 +256,32 @@
 
         MouseDown( e ) {
             this._mouse.dragging = true;
-            this._mouse.position.start = this.GetTranslatedMousePosition( e );
+            this._mouse.position.start = this.getTranslatedMousePosition( e );
             this._mouse.position.end = null;
-            this.Statemachine ();
+            this.statemachine ();
         }
 
         MouseMove( e ){
             if ( this._mouse.dragging ) {
-                this._mouse.position.end = this.GetTranslatedMousePosition( e );
-                this.Statemachine ();
+                this._mouse.position.end = this.getTranslatedMousePosition( e );
+                this.statemachine ();
             } else {
-                var p = this.GetMousePos( e );
+                var p = this.getMousePos( e );
                 
                 switch (true){
                     case this._handsHours.mouseIsOver(p):
                         this._state = "SELECT_HOUR_PREPARE";                  
-                        this.Statemachine();
+                        this.statemachine();
                         break;
                     
                     case this._handsMinutes.mouseIsOver(p):
                         this._state = "SELECT_MINUTE_PREPARE";                        
-                        this.Statemachine();
+                        this.statemachine();
                         break;
 
                     default:
                         this._state = "SELECT_HOUR_PREPARE";
-                        this.Statemachine();
+                        this.statemachine();
                 }
             }
         }
@@ -274,15 +293,15 @@
 
         MouseUp( e ) {            
             this._mouse.dragging = false;
-            this._mouse.position.end = this.GetTranslatedMousePosition( e );
-            this.Statemachine ();
+            this._mouse.position.end = this.getTranslatedMousePosition( e );
+            this.statemachine ();
         }
 
-        NewMinute (e) {
+        newMinute (e) {
             this._outputDigMinutes.innerHTML = e.detail.passedNumber < 10 ? '0' + e.detail.passedNumber : e.detail.passedNumber;
         }
 
-        NewHour (e) {
+        newHour (e) {
             this._outputDigHours.innerHTML = e.detail.passedNumber < 10 ? '0' + e.detail.passedNumber : e.detail.passedNumber;
         }        
     }
