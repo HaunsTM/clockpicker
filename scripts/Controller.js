@@ -2,22 +2,22 @@
     class Controller {
         
         // Constructor
-        constructor (domAnalogSelectors, domDigitalSelectors, canWidth, canHeight, radius) {
+        constructor (domAnalogSelectors, domDigitalSelectors, settings) {
 
-            this._radius = radius;
+            this._radius = Math.max(settings.canvas.width, settings.canvas.height)/2;
 
             this._canvas = {
-                "width" : canWidth,
-                "height" : canHeight
+                "width" : settings.canvas.width,
+                "height" : settings.canvas.height
             };
 
             this._context = {       
-                "width" : canWidth,
-                "height" : canHeight,
+                "width" : settings.canvas.width,
+                "height" : settings.canvas.height,
                 "translation" : {
                     "initial" : {
-                        "x" : canWidth / 2,
-                        "y" : canHeight / 2
+                        "x" : settings.canvas.width / 2,
+                        "y" : settings.canvas.height / 2
                     }
                 }
             };
@@ -39,33 +39,23 @@
             this._time = {
                 "hour" : {
                     "hand" : {
-                        "length" : radius*0.50,
-                        "width" : 6,
-                        "color" :  'blue'
+                        "length" : this._radius*0.50,
+                        "width" : settings.hour.hand.width,
+                        "color" :  settings.hour.hand.color,
                     },
-                    "start" : 1,
-                    "end" : 12,
+                    "start" : settings.hour.start,
+                    "end" : settings.hour.end,
                     "lastSelectedAngle" : 2 * 3/4 * Math.PI,              
                 },
                 "minute" : {
                     "hand" : {
-                        "length" : radius*0.80,
-                        "width" : 6,
-                        "color" :  "#c82124"
+                        "length" : this._radius*0.80,
+                        "width" : settings.minute.hand.width,
+                        "color" :  settings.minute.hand.color,
                     },
-                    "start" : 1,
-                    "end" : 60,
+                    "start" : settings.minute.start,
+                    "end" : settings.minute.end,
                     "lastSelectedAngle" : 2 * 3/4 * Math.PI,
-                },
-                "second" : {
-                    "hand" : {
-                        "length" : radius*0.70,
-                        "width" : 1,
-                        "color" :  "blue"
-                    },
-                    "start" : 1,
-                    "end" : 60,
-                    "lastSelectedAngle" : 0
                 }
             };
 
@@ -80,7 +70,7 @@
             this._canAndCtxMarkersHours = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.markers.hours);
             this._canAndCtxMarkersMinutes = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.markers.minutes);
 
-            this._background = new Background(this._canAndCtxBackground.context,this._radius, "rgba(0, 0, 255, 0.3)");
+            this._background = new Background(this._canAndCtxBackground.context,this._radius, settings.background.color);
 
             this._digitsHours = new Digits(this._canAndCtxDigitsHours.context,this._radius, this._time.hour.start, this._time.hour.end );
             this._digitsMinutes = new Digits(this._canAndCtxDigitsMinutes.context,this._radius, this._time.minute.start, this._time.minute.end );
@@ -88,18 +78,8 @@
             this._handsHours = new Hand(this._canAndCtxHandsHours, this._time.hour.hand, this._time.hour.start, this._time.hour.end );
             this._handsMinutes = new Hand(this._canAndCtxHandsMinutes,this._time.minute.hand, this._time.minute.start, this._time.minute.end);
 
-            let markerHoursWidth  = "4";
-            let markerHoursFillStyle = "red";
-            let drawMarkerIntervalHours = "1";
-
-            let markerMinutesWidth = "2";
-            let markerMinutesFillStyle = "black";
-            let drawMarkerIntervalMinutes =  "5";
-
-           // ctx, markerWidth, markerFillStyle, radius, minNum, maxNum, drawInterval
-
-            this._markersHours = new Markers(this._canAndCtxMarkersHours.context, markerHoursWidth, markerHoursFillStyle, this._radius, this._time.hour.start, this._time.hour.end );
-            this._markersMinutes = new Markers(this._canAndCtxMarkersMinutes.context, markerMinutesWidth, markerMinutesFillStyle, this._radius, this._time.minute.start, this._time.minute.end, drawMarkerIntervalMinutes );
+            this._markersHours = new Markers(this._canAndCtxMarkersHours.context, settings.hour.marker.width, settings.hour.marker.color, this._radius, this._time.hour.start, this._time.hour.end, settings.hour.marker.drawInterval);
+            this._markersMinutes = new Markers(this._canAndCtxMarkersMinutes.context, settings.minute.marker.width, settings.minute.marker.color, this._radius, this._time.minute.start, this._time.minute.end, settings.hour.marker.width, settings.minute.marker.drawInterval );
 
             this._utmostCanvas = this._canAndCtxBackground.canvas.parentElement.lastElementChild;
             this._utmostContext = this._utmostCanvas.getContext("2d");
@@ -181,11 +161,7 @@
             return rad;
         }
 
-        ClearDynamicCanvas () {            
-            //this._digitsHours.clear();
-            //this._digitsMinutes.clear();
-
-            //this._markersHours.clear();
+        ClearDynamicCanvas () {
             this._markersMinutes.clear();
         }
 
@@ -216,11 +192,10 @@
                 break;
 
                 case "SELECT_HOUR":
-                let endAngleH = this.GetAngle( this._mouse.position.end ? this._mouse.position.end : this._mouse.position.start );
+                    let endAngleH = this.GetAngle( this._mouse.position.end ? this._mouse.position.end : this._mouse.position.start );
                     this._time.hour.lastSelectedAngle = this._handsHours.closestDefinedNumberAndAngle(endAngleH).angle;
 
-                    if ( this._mouse.dragging ) {
-                        
+                    if ( this._mouse.dragging ) {                        
                         this._handsHours.drawAngle(this._time.hour.lastSelectedAngle, true);
                     } else {
                         this._handsHours.drawAngle(this._time.hour.lastSelectedAngle, true);
@@ -234,8 +209,6 @@
                 
                     this.ClearDynamicCanvas ();
 
-                    //this._digitsMinutes.Draw();
-                    
                     this._markersMinutes.draw();
                     
                     this._handsMinutes.drawAngle(this._time.minute.lastSelectedAngle, true);
