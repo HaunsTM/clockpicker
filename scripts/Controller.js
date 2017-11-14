@@ -90,6 +90,9 @@
 
             this._state = "DRAW_INITIAL_TIME";
 
+            this._canAndCtxHandsHours.canvas.addEventListener("onHandDrawedOverNumber", this.newHour.bind(this), false);
+            this._canAndCtxHandsMinutes.canvas.addEventListener("onHandDrawedOverNumber", this.newMinute.bind(this), false);
+
             this.statemachine ();
         }
         
@@ -109,10 +112,6 @@
             this._utmostCanvas.addEventListener("mouseout", this.MouseOut.bind(this), false);
             this._utmostCanvas.addEventListener("mouseup", this.MouseUp.bind(this), false);
             
-            this._canAndCtxHandsHours.canvas.addEventListener("onHandDrawedOverNumber", this.newHour.bind(this), false);
-            this._canAndCtxHandsHours.canvas.addEventListener("onAnimationIsPassingNumber", this.newHour.bind(this), false);            
-            this._canAndCtxHandsMinutes.canvas.addEventListener("onHandDrawedOverNumber", this.newMinute.bind(this), false);
-            this._canAndCtxHandsMinutes.canvas.addEventListener("onAnimationIsPassingNumber", this.newMinute.bind(this), false);
         }
 
         SizedAndCenteredOrigoCanvasAndContext (domSelector) {
@@ -193,8 +192,10 @@
                     this._canAndCtxHandsHours.canvas.addEventListener("onAnimationFinished", this.initialExpectedAnimationEventOccurred.bind(this), false);
                     this._canAndCtxHandsHours.canvas.addEventListener("onAnimationFinished", this.initialExpectedAnimationEventOccurred.bind(this), false);
                     
-                    this._handsHours.animateNumber(0, this._time.hour.lastSavedValue, true);    
-                    this._handsMinutes.animateNumber(0, this._time.minute.lastSavedValue, true);
+                    this._handsHours.animateNumber(0, this._time.hour.lastSavedValue);
+                    this._handsMinutes.animateNumber(0, this._time.minute.lastSavedValue);
+                    this._time.hour.lastSelectedAngle = this._handsHours.angle(this._time.hour.lastSavedValue);
+                    this._time.minute.lastSelectedAngle = this._handsMinutes.angle(this._time.minute.lastSavedValue);
                     
                     this._state = "SELECT_HOUR_PREPARE";
                 break;
@@ -205,7 +206,7 @@
 
                     this._markersHours.draw();
 
-                    this._handsHours.drawAngle(this._time.hour.lastSelectedAngle, true);
+                    this._handsHours.drawAngle(this._time.hour.lastSelectedAngle);
                     
                     this._state = "SELECT_HOUR";
                 break;
@@ -215,9 +216,9 @@
                     this._time.hour.lastSelectedAngle = this._handsHours.closestDefinedNumberAndAngle(endAngleH).angle;
 
                     if ( this._mouse.dragging ) {                        
-                        this._handsHours.drawAngle(this._time.hour.lastSelectedAngle, true);
+                        this._handsHours.drawAngle(this._time.hour.lastSelectedAngle);
                     } else {
-                        this._handsHours.drawAngle(this._time.hour.lastSelectedAngle, true);
+                        this._handsHours.drawAngle(this._time.hour.lastSelectedAngle);
                         this._state = "SELECT_MINUTE_PREPARE";
                         this.statemachine();
                     }
@@ -230,7 +231,7 @@
 
                     this._markersMinutes.draw();
                     
-                    this._handsMinutes.drawAngle(this._time.minute.lastSelectedAngle, true);
+                    this._handsMinutes.drawAngle(this._time.minute.lastSelectedAngle);
 
                     this._state = "SELECT_MINUTE";
                     
@@ -244,9 +245,9 @@
                         let curNumber = this._handsMinutes.closestDefinedNumberAndAngle(endAngleM).number;
                         this._markersMinutes.draw(curNumber);
                         
-                        this._handsMinutes.drawAngle(this._time.minute.lastSelectedAngle, true);
+                        this._handsMinutes.drawAngle(this._time.minute.lastSelectedAngle);
                     } else {
-                        this._handsMinutes.drawAngle(this._time.minute.lastSelectedAngle, true);
+                        this._handsMinutes.drawAngle(this._time.minute.lastSelectedAngle);
                         this._state = "SELECT_HOUR_PREPARE";
                         this.statemachine();
                     }

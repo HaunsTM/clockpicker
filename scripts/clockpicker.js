@@ -67,7 +67,7 @@
                 },
                 "start" : 1,
                 "end" : 12,
-                "lastSavedValue" : 13,         
+                "lastSavedValue" : 4,         
             },
             "minute" : {
                 "hand" : {
