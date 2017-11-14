@@ -1,121 +1,129 @@
 'use strict';
     class Controller {
-
+        
         // Constructor
-        constructor (domAnalogSelectors, domDigitalSelectors, canWidth, canHeight, radius) {
+        constructor (dom, settings) {
 
-            this._radius = radius;
+            this._initialEventsToWaitFor = 2;
 
-            this._commonVariables = {
-                "canvas" : {
-                    "width" : canWidth,
-                    "height" : canHeight
-                },
-                "context" : {       
-                    "width" : canWidth,
-                    "height" : canHeight,
-                    "translation" : {
-                        "initial" : {
-                            "x" : canWidth / 2,
-                            "y" : canHeight / 2
-                        }
-                    }
-                },
-                "mouse" : {
-                    "dragging" : false,
-                    "position" : {
-                        "start" : {
-                            "x" : 0,
-                            "y" : 0
-                        },
-                        "end" : {
-                            "x" : 0,
-                            "y" : 0
-                        }
-                    }
-                },
-                "radius" : radius,
-                "time" : {
-                    "hour" : {
-                        "hand" : {
-                            "length" : radius*0.50,
-                            "width" : 6,
-                            "color" :  'blue'
-                        },
-                        "start" : 1,
-                        "end" : 12,
-                        "lastSelectedAngle" : 2 * 3/4 * Math.PI,              
-                    },
-                    "minute" : {
-                        "hand" : {
-                            "length" : radius*0.80,
-                            "width" : 6,
-                            "color" :  "#c82124"
-                        },
-                        "start" : 1,
-                        "end" : 60,
-                        "lastSelectedAngle" : 2 * 3/4 * Math.PI,
-                    },
-                    "second" : {
-                        "hand" : {
-                            "length" : radius*0.70,
-                            "width" : 1,
-                            "color" :  "blue"
-                        },
-                        "start" : 1,
-                        "end" : 60,
-                        "lastSelectedAngle" : 0
+            this._radius = Math.max(settings.canvas.width, settings.canvas.height)/2;
+
+            this._canvas = {
+                "width" : settings.canvas.width,
+                "height" : settings.canvas.height
+            };
+
+            this._context = {       
+                "width" : settings.canvas.width,
+                "height" : settings.canvas.height,
+                "translation" : {
+                    "initial" : {
+                        "x" : settings.canvas.width / 2,
+                        "y" : settings.canvas.height / 2
                     }
                 }
-            }
+            };
 
-            this._outputDigHours = document.querySelector(domDigitalSelectors.hours);
-            this._outputDigMinutes = document.querySelector(domDigitalSelectors.minutes);
+            this._mouse = {
+                "dragging" : false,
+                "position" : {
+                    "start" : {
+                        "x" : 0,
+                        "y" : 0
+                    },
+                    "end" : {
+                        "x" : 0,
+                        "y" : 0
+                    }
+                }
+            };
 
-            this._canAndCtxBackground = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.background, this._commonVariables);
-            this._canAndCtxDigitsHours = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.digits.hours, this._commonVariables);
-            this._canAndCtxDigitsMinutes = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.digits.minutes, this._commonVariables);
-            this._canAndCtxHandsHours = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.hands.hours, this._commonVariables);
-            this._canAndCtxHandsMinutes = this.SizedAndCenteredOrigoCanvasAndContext(domAnalogSelectors.hands.minutes, this._commonVariables);
+            this._time = {
+                "hour" : {
+                    "hand" : {
+                        "length" : this._radius*0.50,
+                        "width" : settings.hour.hand.width,
+                        "color" :  settings.hour.hand.color,
+                    },
+                    "start" : settings.hour.start,
+                    "end" : settings.hour.end,
+                    "lastSavedValue" : settings.hour.lastSavedValue,
+                    "lastSelectedAngle" : 2 * 3/4 * Math.PI,              
+                },
+                "minute" : {
+                    "hand" : {
+                        "length" : this._radius*0.80,
+                        "width" : settings.minute.hand.width,
+                        "color" :  settings.minute.hand.color,
+                    },
+                    "start" : settings.minute.start,
+                    "end" : settings.minute.end,
+                    "lastSavedValue" : settings.minute.lastSavedValue,
+                    "lastSelectedAngle" : 2 * 3/4 * Math.PI,
+                }
+            };
 
-            this._background = new Background(this._canAndCtxBackground.context,this._commonVariables.radius, "rgba(0, 0, 255, 0.3)");
+            this._outputDigHours = document.querySelector(dom.selector.digital.hours);
+            this._outputDigMinutes = document.querySelector(dom.selector.digital.minutes);
 
-            this._digitsHours = new Digits(this._canAndCtxDigitsHours.context,this._commonVariables.radius, this._commonVariables.time.hour.start, this._commonVariables.time.hour.end );
-            this._digitsMinutes = new Digits(this._canAndCtxDigitsMinutes.context,this._commonVariables.radius, this._commonVariables.time.minute.start, this._commonVariables.time.minute.end );
+            this._canAndCtxBackground = this.SizedAndCenteredOrigoCanvasAndContext(dom.selector.analog.background);
+            this._canAndCtxDigitsHours = this.SizedAndCenteredOrigoCanvasAndContext(dom.selector.analog.digits.hours);
+            this._canAndCtxDigitsMinutes = this.SizedAndCenteredOrigoCanvasAndContext(dom.selector.analog.digits.minutes);
+            this._canAndCtxHandsHours = this.SizedAndCenteredOrigoCanvasAndContext(dom.selector.analog.hands.hours);
+            this._canAndCtxHandsMinutes = this.SizedAndCenteredOrigoCanvasAndContext(dom.selector.analog.hands.minutes);
+            this._canAndCtxMarkersHours = this.SizedAndCenteredOrigoCanvasAndContext(dom.selector.analog.markers.hours);
+            this._canAndCtxMarkersMinutes = this.SizedAndCenteredOrigoCanvasAndContext(dom.selector.analog.markers.minutes);
 
-            this._handsHours = new Hand(this._canAndCtxHandsHours, this._commonVariables.time.hour.hand, this._commonVariables.time.hour.start, this._commonVariables.time.hour.end );
-            this._handsMinutes = new Hand(this._canAndCtxHandsMinutes,this._commonVariables.time.minute.hand, this._commonVariables.time.minute.start, this._commonVariables.time.minute.end);
+            this._background = new Background(this._canAndCtxBackground.context,this._radius, settings.background.color);
+
+            this._digitsHours = new Digits(this._canAndCtxDigitsHours.context,this._radius, this._time.hour.start, this._time.hour.end );
+            this._digitsMinutes = new Digits(this._canAndCtxDigitsMinutes.context,this._radius, this._time.minute.start, this._time.minute.end );
+
+            this._handsHours = new Hand(this._canAndCtxHandsHours, this._time.hour.hand, this._time.hour.start, this._time.hour.end );
+            this._handsMinutes = new Hand(this._canAndCtxHandsMinutes,this._time.minute.hand, this._time.minute.start, this._time.minute.end);
+
+            this._markersHours = new Markers(this._canAndCtxMarkersHours.context, settings.hour.marker.width, settings.hour.marker.color, this._radius, this._time.hour.start, this._time.hour.end, settings.hour.marker.drawInterval);
+            this._markersMinutes = new Markers(this._canAndCtxMarkersMinutes.context, settings.minute.marker.width, settings.minute.marker.color, this._radius, this._time.minute.start, this._time.minute.end, settings.hour.marker.width, settings.minute.marker.drawInterval );
 
             this._utmostCanvas = this._canAndCtxBackground.canvas.parentElement.lastElementChild;
             this._utmostContext = this._utmostCanvas.getContext("2d");
 
-            this._background.Draw();
+            this._state = "DRAW_INITIAL_TIME";
 
+            this._canAndCtxHandsHours.canvas.addEventListener("onHandDrawedOverNumber", this.newHour.bind(this), false);
+            this._canAndCtxHandsMinutes.canvas.addEventListener("onHandDrawedOverNumber", this.newMinute.bind(this), false);
+
+            this.statemachine ();
+        }
+        
+        initialExpectedAnimationEventOccurred () {
+
+            this._initialEventsToWaitFor --;
+
+            if (this._initialEventsToWaitFor < 1) {
+                this.addCanvasEventListeners();
+            }
+        }
+
+        addCanvasEventListeners() {
+            
             this._utmostCanvas.addEventListener("mousedown", this.MouseDown.bind(this), false);
             this._utmostCanvas.addEventListener("mousemove", this.MouseMove.bind(this), false);
             this._utmostCanvas.addEventListener("mouseout", this.MouseOut.bind(this), false);
             this._utmostCanvas.addEventListener("mouseup", this.MouseUp.bind(this), false);
             
-            this._canAndCtxHandsHours.canvas.addEventListener("onHandDrawedOverNumber", this.NewHour.bind(this), false);
-            this._canAndCtxHandsHours.canvas.addEventListener("onAnimationIsPassingNumber", this.NewHour.bind(this), false);            
-            this._canAndCtxHandsMinutes.canvas.addEventListener("onHandDrawedOverNumber", this.NewMinute.bind(this), false);
-            this._canAndCtxHandsMinutes.canvas.addEventListener("onAnimationIsPassingNumber", this.NewMinute.bind(this), false);
+        }
 
-            this._state = "DRAW_INITIAL_TIME";
-
-            this.Statemachine ();
-        }      
-
-        SizedAndCenteredOrigoCanvasAndContext ( domSelector, commonVariables ) {
+        SizedAndCenteredOrigoCanvasAndContext (domSelector) {
             let curCanvas = document.querySelector( domSelector );
             let curContext = curCanvas.getContext("2d");
 
-            curCanvas.width = commonVariables.canvas.width;
-            curCanvas.height = commonVariables.canvas.height;
+            curCanvas.width = this._canvas.width;
+            curCanvas.height = this._canvas.height;
 
-            curContext.translate(commonVariables.context.translation.initial.x, commonVariables.context.translation.initial.y);        
-            curContext.width = commonVariables.context.width;
-            curContext.height = commonVariables.context.height;
+            curContext.translate(this._context.translation.initial.x, this._context.translation.initial.y);        
+            curContext.width = this._context.width;
+            curContext.height = this._context.height;
             
             return { 
                 "selector" : domSelector,
@@ -124,7 +132,7 @@
             }
         }
         
-        GetMousePos(e) {
+        getMousePos(e) {
 
             var rect = this._utmostCanvas.getBoundingClientRect();
 
@@ -134,16 +142,16 @@
             };
         }
         
-        GetTranslatedMousePosition(e, commonVariables) {            
-            var mousePos = this.GetMousePos(e, this._utmostCanvas);
+        getTranslatedMousePosition(e) {            
+            var mousePos = this.getMousePos(e);
             
             return {
-                x: mousePos.x - commonVariables.context.translation.initial.x,
-                y: commonVariables.context.translation.initial.y - mousePos.y
+                x: mousePos.x - this._context.translation.initial.x,
+                y: this._context.translation.initial.y - mousePos.y
             }
         }
 
-        GetAngle (mousePos) {
+        getAngle (mousePos) {
 
             let rad = 0;
             let aWholeRound = 2 * Math.PI;
@@ -163,179 +171,138 @@
             }
             rad += aWholeRound;
 
-            return {"rad":rad, "deg":rad*360/(2*Math.PI)};
+            return rad;
         }
 
-        ClearDynamicCanvas () {            
-            this._digitsHours.clear();
-            this._digitsMinutes.clear();
-
-            //this._handsHours.clear();
-            //this._handsMinutes.clear();
+        clearDynamicCanvas () {
+            this._markersMinutes.clear();
         }
 
-        Statemachine ( ) {
+        statemachine ( ) {
             
             switch (this._state) {
                 case "DRAW_INITIAL_TIME":
-                    this.ClearDynamicCanvas ()
+                    this.clearDynamicCanvas ()
+
+                    this._background.draw();
 
                     this._digitsHours.Draw();
+                    this._markersHours.draw();                    
                     
-                    this._handsHours.drawAngle(this._commonVariables.time.hour.lastSelectedAngle, true);    
-                    this._handsMinutes.drawAngle(this._commonVariables.time.minute.lastSelectedAngle, true);
+                    this._canAndCtxHandsHours.canvas.addEventListener("onAnimationFinished", this.initialExpectedAnimationEventOccurred.bind(this), false);
+                    this._canAndCtxHandsHours.canvas.addEventListener("onAnimationFinished", this.initialExpectedAnimationEventOccurred.bind(this), false);
+                    
+                    this._handsHours.animateNumber(0, this._time.hour.lastSavedValue);
+                    this._handsMinutes.animateNumber(0, this._time.minute.lastSavedValue);
+                    this._time.hour.lastSelectedAngle = this._handsHours.angle(this._time.hour.lastSavedValue);
+                    this._time.minute.lastSelectedAngle = this._handsMinutes.angle(this._time.minute.lastSavedValue);
                     
                     this._state = "SELECT_HOUR_PREPARE";
                 break;
 
                 case "SELECT_HOUR_PREPARE":
                 
-                    this.ClearDynamicCanvas ()
+                    this.clearDynamicCanvas ()
 
-                    this._digitsHours.Draw();
+                    this._markersHours.draw();
 
-                    this._handsHours.drawAngle(this._commonVariables.time.hour.lastSelectedAngle, true);
+                    this._handsHours.drawAngle(this._time.hour.lastSelectedAngle);
                     
                     this._state = "SELECT_HOUR";
                 break;
 
                 case "SELECT_HOUR":
-                    let endAngleH = this.GetAngle( this._commonVariables.mouse.position.end ? this._commonVariables.mouse.position.end : this._commonVariables.mouse.position.start );
-                    this._commonVariables.time.hour.lastSelectedAngle = this._handsHours.closestDefinedNumberAndAngle(endAngleH.rad).angle;
+                    let endAngleH = this.getAngle( this._mouse.position.end ? this._mouse.position.end : this._mouse.position.start );
+                    this._time.hour.lastSelectedAngle = this._handsHours.closestDefinedNumberAndAngle(endAngleH).angle;
 
-                    if ( this._commonVariables.mouse.dragging ) {
-                        
-                        this._handsHours.drawAngle(this._commonVariables.time.hour.lastSelectedAngle, true);
+                    if ( this._mouse.dragging ) {                        
+                        this._handsHours.drawAngle(this._time.hour.lastSelectedAngle);
                     } else {
-                        this._handsHours.drawAngle(this._commonVariables.time.hour.lastSelectedAngle, true);
+                        this._handsHours.drawAngle(this._time.hour.lastSelectedAngle);
                         this._state = "SELECT_MINUTE_PREPARE";
-                        this.Statemachine();
+                        this.statemachine();
                     }
 
                 break;
                 
                 case "SELECT_MINUTE_PREPARE":
                 
-                    this.ClearDynamicCanvas ()
+                    this.clearDynamicCanvas ();
 
-                    this._digitsMinutes.Draw();
+                    this._markersMinutes.draw();
                     
-                    this._handsMinutes.drawAngle(this._commonVariables.time.minute.lastSelectedAngle, true);
+                    this._handsMinutes.drawAngle(this._time.minute.lastSelectedAngle);
 
                     this._state = "SELECT_MINUTE";
                     
                 break;
 
                 case "SELECT_MINUTE":
-                    let endAngleM = this.GetAngle( this._commonVariables.mouse.position.end ? this._commonVariables.mouse.position.end : this._commonVariables.mouse.position.start );
-                    this._commonVariables.time.minute.lastSelectedAngle = this._handsMinutes.closestDefinedNumberAndAngle(endAngleM.rad).angle;
-                    if ( this._commonVariables.mouse.dragging ) {
+                    let endAngleM = this.getAngle( this._mouse.position.end ? this._mouse.position.end : this._mouse.position.start );
+                    this._time.minute.lastSelectedAngle = this._handsMinutes.closestDefinedNumberAndAngle(endAngleM).angle;
+                    if ( this._mouse.dragging ) {
+                        this.clearDynamicCanvas ();
+                        let curNumber = this._handsMinutes.closestDefinedNumberAndAngle(endAngleM).number;
+                        this._markersMinutes.draw(curNumber);
                         
-                        this._handsMinutes.drawAngle(this._commonVariables.time.minute.lastSelectedAngle, true);
+                        this._handsMinutes.drawAngle(this._time.minute.lastSelectedAngle);
                     } else {
-                        this._handsMinutes.drawAngle(this._commonVariables.time.minute.lastSelectedAngle, true);
-                        this._state = "DRAW_INITIAL_TIME";
-                        this.Statemachine();
+                        this._handsMinutes.drawAngle(this._time.minute.lastSelectedAngle);
+                        this._state = "SELECT_HOUR_PREPARE";
+                        this.statemachine();
                     }
                 break;
             }            
         }
 
         MouseDown( e ) {
-            this._commonVariables.mouse.dragging = true;
-            this._commonVariables.mouse.position.start = this.GetTranslatedMousePosition( e , this._commonVariables);
-            this._commonVariables.mouse.position.end = null;
-            this.Statemachine ();
+            this._mouse.dragging = true;
+            this._mouse.position.start = this.getTranslatedMousePosition( e );
+            this._mouse.position.end = null;
+            this.statemachine ();
         }
 
         MouseMove( e ){
-            if ( this._commonVariables.mouse.dragging ) {
-                this._commonVariables.mouse.position.end = this.GetTranslatedMousePosition( e , this._commonVariables);
-                this.Statemachine ();
+            if ( this._mouse.dragging ) {
+                this._mouse.position.end = this.getTranslatedMousePosition( e );
+                this.statemachine ();
             } else {
-                var p = this.GetMousePos( e , this._commonVariables);
+                var p = this.getMousePos( e );
                 
                 switch (true){
                     case this._handsHours.mouseIsOver(p):
                         this._state = "SELECT_HOUR_PREPARE";                  
-                        this.Statemachine();
+                        this.statemachine();
                         break;
                     
                     case this._handsMinutes.mouseIsOver(p):
                         this._state = "SELECT_MINUTE_PREPARE";                        
-                        this.Statemachine();
+                        this.statemachine();
                         break;
 
                     default:
                         this._state = "SELECT_HOUR_PREPARE";
-                        this.Statemachine();
+                        this.statemachine();
                 }
             }
         }
 
         MouseOut ( e ) {
-            this._commonVariables.mouse.dragging = false;
+            //occurs when mouse leaves canvas area
+            this._mouse.dragging = false;
         }
 
         MouseUp( e ) {            
-            this._commonVariables.mouse.dragging = false;
-            this._commonVariables.mouse.position.end = this.GetTranslatedMousePosition( e , this._commonVariables);
-            this.Statemachine ();
+            this._mouse.dragging = false;
+            this._mouse.position.end = this.getTranslatedMousePosition( e );
+            this.statemachine ();
         }
 
-        NewMinute (e) {
+        newMinute (e) {
             this._outputDigMinutes.innerHTML = e.detail.passedNumber < 10 ? '0' + e.detail.passedNumber : e.detail.passedNumber;
         }
 
-        NewHour (e) {
+        newHour (e) {
             this._outputDigHours.innerHTML = e.detail.passedNumber < 10 ? '0' + e.detail.passedNumber : e.detail.passedNumber;
-        }
-        
-
-        _MouseUp(mouseEvent){
-            
-            // http://www.html5canvastutorials.com/advanced/html5-canvas-mouse-coordinates/
-            var mousePos = this.GetTranslatedMousePosition(mouseEvent, this._commonVariables);
-
-            this._commonVariables.mouse.position.moveEnd.x = mousePos.x;
-            this._commonVariables.mouse.position.moveEnd.y = mousePos.y;
-
-            let startAngle = this.GetAngle({"x": this._commonVariables.mouse.position.moveStart.x, 
-                                            "y": this._commonVariables.mouse.position.moveStart.y});
-            let endAngle = this.GetAngle({"x": this._commonVariables.mouse.position.moveEnd.x, 
-                                            "y": this._commonVariables.mouse.position.moveEnd.y});
-            
-            var details = document.getElementById('details');
-            details.innerHTML = "<table>"+
-                                    "<tr><td colspan=2>moveStart</td><td colspan=2>moveEnd</td></tr>"+
-                                    "<tr><td>x</td><td>y</td><td>x</td><td>y</td></tr>"+
-                                    
-                                    "<tr>"+
-                                        "<td>"+this._commonVariables.mouse.position.moveStart.x+"</td>"+
-                                        "<td>"+this._commonVariables.mouse.position.moveStart.y+"</td>"+
-                                        "<td>"+this._commonVariables.mouse.position.moveEnd.x+"</td>"+
-                                        "<td>"+this._commonVariables.mouse.position.moveEnd.y+"</td>"+
-                                    "</tr>"+
-                                "</table>" +
-                                "<p><b>startAngle: </b>" + Math.round(startAngle.deg) + " &deg; (" + Math.round(startAngle.rad * 100)/100 + " rad" +")</p>"+
-                                "<p><b>endAngle: </b>" + Math.round(endAngle.deg) + " &deg; ("+ Math.round(endAngle.rad * 100)/100 + "  rad" +")</p>";
-
-            switch (this._state) {
-                case "SELECT_HOUR" :
-                    let closestHourAngle = this._handsHours.closestDefinedNumberAndAngle(endAngle.rad).angle;
-                    this._handsHours.animate(this._commonVariables.time.hour.lastSelectedAngle, closestHourAngle);
-                    this._commonVariables.time.hour.lastSelectedAngle = closestHourAngle;
-                    break;
-                case "SELECT_MINUTE" :                    
-                    let closestMinuteAngle = this._handsMinutes.closestDefinedNumberAndAngle(endAngle.rad).angle;
-                    this._handsMinutes.animate(this._commonVariables.time.minute.lastSelectedAngle, closestMinuteAngle);
-                    this._commonVariables.time.minute.lastSelectedAngle = closestMinuteAngle;
-                    break;
-            }
-
-            this._commonVariables.mouse.position.moveStart.x = mousePos.x;
-            this._commonVariables.mouse.position.moveStart.y = mousePos.y;
-            
-            this.Statemachine();
-        }
+        }        
     }

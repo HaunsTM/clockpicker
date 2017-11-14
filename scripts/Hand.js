@@ -8,6 +8,8 @@ class Hand {
         
         this._canAndCtx.context.strokeStyle = hand.color;
 
+        this._lastDrawnAngle = 0;
+
         this._minNum = minNum;
         this._maxNum = maxNum;
 
@@ -31,8 +33,7 @@ class Hand {
 
                         numbersAndAngles.push(correspondingNumberAndAngle);
                     }
-                }
-                
+                }                
                 return numbersAndAngles;    
             }
             return getNumbersAndAngles(totNum);
@@ -74,26 +75,27 @@ class Hand {
         }
     }
 
-    raiseAnimationIsPassingNumber (number){
+    raiseAnimationFinished () {
         var event = new CustomEvent(
-            "onAnimationIsPassingNumber", 
+            "onAnimationFinished", 
             {
                 "detail": {
-                    "passedNumber": number
+                    "done": true
                 },
                 "bubbles": true,
                 "cancelable": true
             }
-        )            
+        )
         this._canAndCtx.canvas.dispatchEvent(event);
     }
     
-    raiseHandDrawedOverNumber (number){
+    raiseHandDrawedOverNumber (number, isMovingClockwise){
         var event = new CustomEvent(
             "onHandDrawedOverNumber", 
             {
                 "detail": {
-                    "passedNumber": number
+                    "passedNumber" : number,
+                    "isMovingClockwise" : isMovingClockwise
                 },
                 "bubbles": true,
                 "cancelable": true
@@ -103,22 +105,26 @@ class Hand {
     }    
 
     angle(number) {
-        let length = self._numbersAndAngles.length;
+        let length = this._numbersAndAngles.length;
         
         for( let i = 0; i < length; i++ ) {
-            if(self._numbersAndAngles[i].number === number) {
-                return self._numbersAndAngles[i].angle;
+            if (this._numbersAndAngles[i].number === number) {
+                return this._numbersAndAngles[i].angle;
             }
         }
         return null;
     }
 
-    drawNumber (number, raiseHandDrawedOverNumberEvent) {
+    drawNumber (number) {
         angle = this.angle(number);
-        return drawAngle (angle, raiseHandDrawedOverNumberEvent);
+        return drawAngle (angle);
     }
 
-    drawAngle (angle, raiseHandDrawedOverNumberEvent) {
+    handIsMovingClockwise(lastDrawnAngle, angleToDraw) {        
+        return lastDrawnAngle < angleToDraw;
+    }
+
+    drawAngle (angle) {
         this.clear();
 
         this._canAndCtx.context.beginPath();
@@ -131,10 +137,11 @@ class Hand {
         this._canAndCtx.context.lineTo(hLP.eP.x, hLP.eP.y);
         
         this._canAndCtx.context.stroke();
-        if (raiseHandDrawedOverNumberEvent) {
-            let number = this.closestDefinedNumberAndAngle(angle).number;
-            this.raiseHandDrawedOverNumber(number);
-        }
+        
+        let number = this.closestDefinedNumberAndAngle(angle).number;
+        let isMovingClockwise = this.handIsMovingClockwise(this._lastDrawnAngle, angle)
+        this._lastDrawnAngle = angle;
+        this.raiseHandDrawedOverNumber(number, isMovingClockwise);
     }
 
     closestDefinedNumberAndAngle(realAngle) {
@@ -161,6 +168,12 @@ class Hand {
         return null;
     }
 
+    animateNumber(startNumber, endNumber) {
+        let startAngle = this.angle(startNumber);
+        let endAngle = this.angle(endNumber);
+        this.animate(startAngle, endAngle);
+    }
+
     animate(startAngle, endAngle) {
         
         var self = this;
@@ -172,23 +185,6 @@ class Hand {
 
         startAngle = ( !rotateClockwise && willPassZeroAngle ) ? startAngle + 2 * Math.PI : startAngle;
         endAngle = ( rotateClockwise && willPassZeroAngle ) ? endAngle + 2 * Math.PI : endAngle;
-
-        let willPassNumber = function (angleBeforeHandPass, angleAfterHandPass){
-            let length = self._numbersAndAngles.length;
-        
-            //angleAfterHandPass = angleAfterHandPass - parseInt( angleAfterHandPass / ( 2 * Math.PI ) ) * ( 2 * Math.PI );
-            let minAngle = Math.min(angleBeforeHandPass, angleAfterHandPass);
-            let maxAngle = Math.max(angleBeforeHandPass, angleAfterHandPass);
-            for( let i = 0; i < length; i++ ) {
-                let number = self._numbersAndAngles[i].number;
-                let angle = self._numbersAndAngles[i].angle;
-                if ( (minAngle < angle && angle < maxAngle) || ( rotateClockwise && ( angleBeforeHandPass > angleAfterHandPass )) || ( !rotateClockwise && ( angleBeforeHandPass < angleAfterHandPass )) ){
-                    //passing number
-                    return number;
-                }
-            }
-            return null;
-        }
 
         let nextAngle = function (curAngle, endAngle) {
             let nextAngleCandidate;
@@ -218,22 +214,23 @@ class Hand {
         let  curAngle = startAngle;
 
         animate_inner = function () {
-            let raiseHandDrawedOverNumber = false;
-            self.drawAngle(curAngle, raiseHandDrawedOverNumber);
+
+            let raiseHandDrawedOverNumber = true;
+            self.drawAngle(curAngle);
             let angleToDraw = nextAngle(curAngle, endAngle);
 
-            //are we done
+            //are we done?
             if (angleToDraw && !isNaN(angleToDraw)) {
-                
-                let numberPassed = willPassNumber(curAngle, angleToDraw);
-                if ( numberPassed > 0 ) raiseAnimationIsPassingNumber( numberPassed );
+                //nope...
                 curAngle = angleToDraw;
                 requestAnimationFrame(function () {
                     animate_inner();
                 });
+            } else {
+                //yes, we're done
+                self.raiseAnimationFinished();
             }
-        }  
-
+        }
         var requestID = requestAnimationFrame(animate_inner);
     }
 }
