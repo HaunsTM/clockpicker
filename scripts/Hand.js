@@ -8,7 +8,8 @@ class Hand {
         
         this._canAndCtx.context.strokeStyle = hand.color;
 
-        this._lastDrawnAngle = 0;
+        this._lastDrawnNumber = 0;
+        this._lastRegisteredDirectionWasClockwise = false;
 
         this._minNum = minNum;
         this._maxNum = maxNum;
@@ -120,8 +121,17 @@ class Hand {
         return drawAngle (angle);
     }
 
-    handIsMovingClockwise(lastDrawnAngle, angleToDraw) {        
-        return lastDrawnAngle < angleToDraw;
+    handIsMovingClockwise(lastDrawnNumber, numberToDraw) {        
+        var isMovingClockwise = false;
+        var isPassingDay = Math.abs(lastDrawnNumber - numberToDraw) > 1;
+        if (isPassingDay) {
+            isMovingClockwise = lastDrawnNumber > numberToDraw;
+        } else {
+            
+            isMovingClockwise = lastDrawnNumber == numberToDraw ? this._lastRegisteredDirectionWasClockwise :lastDrawnNumber < numberToDraw;
+        }
+        this._lastRegisteredDirectionWasClockwise = isMovingClockwise;
+        return isMovingClockwise;
     }
 
     drawAngle (angle) {
@@ -139,8 +149,8 @@ class Hand {
         this._canAndCtx.context.stroke();
         
         let number = this.closestDefinedNumberAndAngle(angle).number;
-        let isMovingClockwise = this.handIsMovingClockwise(this._lastDrawnAngle, angle)
-        this._lastDrawnAngle = angle;
+        let isMovingClockwise = this.handIsMovingClockwise(this._lastDrawnNumber, number);
+        this._lastDrawnNumber = number;
         this.raiseHandDrawedOverNumber(number, isMovingClockwise);
     }
 

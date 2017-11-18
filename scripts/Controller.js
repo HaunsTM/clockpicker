@@ -271,18 +271,18 @@
                 
                 switch (true){
                     case this._handsHours.mouseIsOver(p):
-                        this._state = "SELECT_HOUR_PREPARE";                  
-                        this.statemachine();
+                        this._state = "SELECT_HOUR_PREPARE";
+                        //this.statemachine();
                         break;
                     
                     case this._handsMinutes.mouseIsOver(p):
-                        this._state = "SELECT_MINUTE_PREPARE";                        
-                        this.statemachine();
+                        this._state = "SELECT_MINUTE_PREPARE";
+                        //this.statemachine();
                         break;
 
                     default:
                         this._state = "SELECT_HOUR_PREPARE";
-                        this.statemachine();
+                        //this.statemachine();
                 }
             }
         }
@@ -303,6 +303,7 @@
         }
 
         newHour (e) {
-            this._outputDigHours.innerHTML = e.detail.passedNumber < 10 ? '0' + e.detail.passedNumber : e.detail.passedNumber;
+            //this._outputDigHours.innerHTML = e.detail.passedNumber < 10 ? '0' + e.detail.passedNumber : e.detail.passedNumber;
+            this._outputDigHours.innerHTML = e.detail.isMovingClockwise ? "med":"mot";
         }        
     }
