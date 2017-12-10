@@ -65,9 +65,12 @@
                     "color" :  "red",
                     "drawInterval" : 1,
                 },
-                "start" : 1,
-                "end" : 12,
-                "lastSavedValue" : 4,         
+                "numbers" : {
+                    "start" : 1,
+                    "end" : 24,
+                    "roundsToDistrubuteOn" : 2,
+                },
+                "lastSavedValue" : 14,         
             },
             "minute" : {
                 "hand" : {
@@ -84,8 +87,11 @@
                     "color" :  "black",
                     "drawInterval" : 5,
                 },
-                "start" : 1,
-                "end" : 60,
+                "numbers" : {
+                    "start" : 1,
+                    "end" : 60,
+                    "roundsToDistrubuteOn" : 1,
+                },
                 "lastSavedValue" : 32,
             }
         };        

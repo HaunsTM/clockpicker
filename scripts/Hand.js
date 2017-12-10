@@ -2,23 +2,28 @@
 class Hand {
 
     // Constructor
-    constructor (canAndCtx, hand, minNum, maxNum) {
+    constructor (canAndCtx, hand, minNum, maxNum, roundsToDistrubuteNumbersOn) {
         this._canAndCtx = canAndCtx;
         this._hand = hand;
-        
+        this._roundsToDistrubuteNumbersOn = roundsToDistrubuteNumbersOn;
+
         this._canAndCtx.context.strokeStyle = hand.color;
 
+        this._currentRound = 1; 
         this._lastDrawnNumber = 0;
         this._lastRegisteredDirectionWasClockwise = false;
 
         this._minNum = minNum;
         this._maxNum = maxNum;
 
-        this._numbersAndAngles =  (function (totNum) {
+        let totNum = (maxNum - minNum) + 1;
+        this._numbersPerRound = totNum / roundsToDistrubuteNumbersOn
+        this._angleBetweenNumbers =  2 * Math.PI * roundsToDistrubuteNumbersOn / totNum;
 
-            function getNumbersAndAngles (totNum){
+        this._numbersAndAngles =  (function (totNum, angleBetweenNumbers) {
 
-                let angleBetweenNumbers =  2 * Math.PI / totNum
+            function getNumbersAndAngles (totNum, angleBetweenNumbers){
+
                 let numbersAndAngles = [];
 
                 let aWholeRound = 2 * Math.PI;
@@ -37,8 +42,8 @@ class Hand {
                 }                
                 return numbersAndAngles;    
             }
-            return getNumbersAndAngles(totNum);
-        })((maxNum - minNum) + 1);
+            return getNumbersAndAngles(totNum, angleBetweenNumbers);
+        })(this._numbersPerRound, this._angleBetweenNumbers);
         this._angleAnimation = 2 * Math.PI / 72;
     }
     
@@ -116,22 +121,42 @@ class Hand {
         return null;
     }
 
-    drawNumber (number) {
-        angle = this.angle(number);
-        return drawAngle (angle);
+    isPassingRound (lastDrawnNumber, numberToDraw) {
+        return Math.abs(lastDrawnNumber - numberToDraw) > 1;
     }
 
-    handIsMovingClockwise(lastDrawnNumber, numberToDraw) {        
+    handIsMovingClockwise(lastDrawnNumber, numberToDraw, isPassingRound) {        
         var isMovingClockwise = false;
-        var isPassingDay = Math.abs(lastDrawnNumber - numberToDraw) > 1;
-        if (isPassingDay) {
+
+        if (isPassingRound) {
             isMovingClockwise = lastDrawnNumber > numberToDraw;
         } else {
             
-            isMovingClockwise = lastDrawnNumber == numberToDraw ? this._lastRegisteredDirectionWasClockwise :lastDrawnNumber < numberToDraw;
+            isMovingClockwise = lastDrawnNumber == numberToDraw ? this._lastRegisteredDirectionWasClockwise : lastDrawnNumber < numberToDraw;
         }
         this._lastRegisteredDirectionWasClockwise = isMovingClockwise;
         return isMovingClockwise;
+    }
+    
+    currentRound (isPassingRound, isMovingClockwise, roundBeforeMove, roundsToDistrubuteNumbersOn) {
+        
+        if (isPassingRound) {
+            if (isMovingClockwise) {
+                if (roundBeforeMove == roundsToDistrubuteNumbersOn) {
+                    return 1;
+                } else {
+                    return roundBeforeMove + 1;
+                }
+            } else {                
+                if (roundBeforeMove == 1) {
+                    return roundsToDistrubuteNumbersOn;
+                } else {
+                    return roundBeforeMove - 1;
+                }
+            }
+        } else {
+            return roundBeforeMove;
+        }
     }
 
     drawAngle (angle) {
@@ -147,11 +172,19 @@ class Hand {
         this._canAndCtx.context.lineTo(hLP.eP.x, hLP.eP.y);
         
         this._canAndCtx.context.stroke();
-        
-        let number = this.closestDefinedNumberAndAngle(angle).number;
-        let isMovingClockwise = this.handIsMovingClockwise(this._lastDrawnNumber, number);
-        this._lastDrawnNumber = number;
+        /*
+        let isPassingRound = this.isPassingRound(this._lastDrawnNumber, angle); 
+        console.clear();       
+        console.log(isPassingRound);       
+        let isMovingClockwise = this.handIsMovingClockwise(this._lastDrawnNumber, angle, isPassingRound);
+        let currentRound = this.currentRound(isPassingRound, isMovingClockwise, this._currentRound, this._roundsToDistrubuteNumbersOn)
+
+        this._currentRound = currentRound;
+
+        let number = this.reportedNumber(angle, this._currentRound, this._numbersPerRound);
+        this._lastDrawnAngle = angle;
         this.raiseHandDrawedOverNumber(number, isMovingClockwise);
+        */
     }
 
     closestDefinedNumberAndAngle(realAngle) {
@@ -177,6 +210,14 @@ class Hand {
         }
         return null;
     }
+
+    reportedNumber(realAngle, currentRound, numbersPerRound) {
+        
+        let addNumber = numbersPerRound*(currentRound-1);
+        
+        return this.closestDefinedNumberAndAngle(realAngle).number + addNumber;
+    }
+
 
     animateNumber(startNumber, endNumber) {
         let startAngle = this.angle(startNumber);

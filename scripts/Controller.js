@@ -45,8 +45,11 @@
                         "width" : settings.hour.hand.width,
                         "color" :  settings.hour.hand.color,
                     },
-                    "start" : settings.hour.start,
-                    "end" : settings.hour.end,
+                    "numbers" : {
+                        "start" : settings.hour.numbers.start,
+                        "end" : settings.hour.numbers.end,
+                        "roundsToDistrubuteOn" : settings.hour.numbers.roundsToDistrubuteOn,
+                    },
                     "lastSavedValue" : settings.hour.lastSavedValue,
                     "lastSelectedAngle" : 2 * 3/4 * Math.PI,              
                 },
@@ -56,8 +59,11 @@
                         "width" : settings.minute.hand.width,
                         "color" :  settings.minute.hand.color,
                     },
-                    "start" : settings.minute.start,
-                    "end" : settings.minute.end,
+                    "numbers" : {
+                        "start" : settings.minute.numbers.start,
+                        "end" : settings.minute.numbers.end,
+                        "roundsToDistrubuteOn" : settings.minute.numbers.roundsToDistrubuteOn,
+                    },
                     "lastSavedValue" : settings.minute.lastSavedValue,
                     "lastSelectedAngle" : 2 * 3/4 * Math.PI,
                 }
@@ -76,14 +82,14 @@
 
             this._background = new Background(this._canAndCtxBackground.context,this._radius, settings.background.color);
 
-            this._digitsHours = new Digits(this._canAndCtxDigitsHours.context,this._radius, this._time.hour.start, this._time.hour.end );
-            this._digitsMinutes = new Digits(this._canAndCtxDigitsMinutes.context,this._radius, this._time.minute.start, this._time.minute.end );
+            this._digitsHours = new Digits(this._canAndCtxDigitsHours.context,this._radius, this._time.hour.numbers.start, this._time.hour.numbers.end, this._time.hour.numbers.roundsToDistrubuteOn );
+            this._digitsMinutes = new Digits(this._canAndCtxDigitsMinutes.context,this._radius, this._time.minute.numbers.start, this._time.minute.numbers.end, this._time.minute.numbers.roundsToDistrubuteOn );
 
-            this._handsHours = new Hand(this._canAndCtxHandsHours, this._time.hour.hand, this._time.hour.start, this._time.hour.end );
-            this._handsMinutes = new Hand(this._canAndCtxHandsMinutes,this._time.minute.hand, this._time.minute.start, this._time.minute.end);
+            this._handsHours = new Hand(this._canAndCtxHandsHours, this._time.hour.hand, this._time.hour.numbers.start, this._time.hour.numbers.end, this._time.hour.numbers.roundsToDistrubuteOn);
+            this._handsMinutes = new Hand(this._canAndCtxHandsMinutes,this._time.minute.hand, this._time.minute.numbers.start, this._time.minute.numbers.end, this._time.minute.numbers.roundsToDistrubuteOn);
 
-            this._markersHours = new Markers(this._canAndCtxMarkersHours.context, settings.hour.marker.width, settings.hour.marker.color, this._radius, this._time.hour.start, this._time.hour.end, settings.hour.marker.drawInterval);
-            this._markersMinutes = new Markers(this._canAndCtxMarkersMinutes.context, settings.minute.marker.width, settings.minute.marker.color, this._radius, this._time.minute.start, this._time.minute.end, settings.hour.marker.width, settings.minute.marker.drawInterval );
+            this._markersHours = new Markers(this._canAndCtxMarkersHours.context, settings.hour.marker.width, settings.hour.marker.color, this._radius, this._time.hour.numbers.start, this._time.hour.numbers.end, settings.hour.marker.drawInterval);
+            this._markersMinutes = new Markers(this._canAndCtxMarkersMinutes.context, settings.minute.marker.width, settings.minute.marker.color, this._radius, this._time.minute.numbers.start, this._time.minute.numbers.end, settings.hour.marker.width, settings.minute.marker.drawInterval );
 
             this._utmostCanvas = this._canAndCtxBackground.canvas.parentElement.lastElementChild;
             this._utmostContext = this._utmostCanvas.getContext("2d");
@@ -186,7 +192,7 @@
 
                     this._background.draw();
 
-                    this._digitsHours.Draw();
+                    this._digitsHours.draw();
                     this._markersHours.draw();                    
                     
                     this._canAndCtxHandsHours.canvas.addEventListener("onAnimationFinished", this.initialExpectedAnimationEventOccurred.bind(this), false);
@@ -304,6 +310,8 @@
 
         newHour (e) {
             //this._outputDigHours.innerHTML = e.detail.passedNumber < 10 ? '0' + e.detail.passedNumber : e.detail.passedNumber;
-            this._outputDigHours.innerHTML = e.detail.isMovingClockwise ? "med":"mot";
+            let hh = e.detail.passedNumber < 10 ? '0' + e.detail.passedNumber : e.detail.passedNumber;
+            let d = e.detail.isMovingClockwise ? "med":"mot";
+            this._outputDigHours.innerHTML = hh + " (" + d + ")";
         }        
     }
